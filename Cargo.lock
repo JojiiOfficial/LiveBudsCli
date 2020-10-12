@@ -367,6 +367,7 @@ name = "earbuds"
 version = "0.1.0"
 dependencies = [
  "async-std",
+ "bluetooth-serial-port-async",
  "blurz",
  "clap",
  "daemon-engine",
