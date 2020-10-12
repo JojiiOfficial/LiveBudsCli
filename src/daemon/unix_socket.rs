@@ -1,6 +1,10 @@
+use super::bud_connection::BudsConnection;
+
 use async_std::io::{BufReader, BufWriter};
 use async_std::os::unix::net::{UnixListener, UnixStream};
 use async_std::prelude::*;
+
+use std::sync::{Arc, Mutex};
 
 /// Runs the unix socket which
 /// provides the userspace API

@@ -3,8 +3,10 @@
  * to the galaxy buds if available
  */
 
+use super::bud_connection::BudsConnection;
+use super::connection_handler::ConnectionHandler;
 use super::utils;
-use async_std::os::unix::net::UnixStream;
+
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 use blurz::{
     BluetoothDevice,
@@ -13,14 +15,8 @@ use blurz::{
 };
 
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::{Arc, Mutex};
 use std::{error::Error, str::FromStr};
-
-/// An active connection to a pair of buds
-#[derive(Debug)]
-pub struct BudsConnection {
-    pub addr: String,
-    pub stream: UnixStream,
-}
 
 /// Run the bluetooth futures
 pub async fn run() {
@@ -68,15 +64,19 @@ async fn run_bt_listener(tx: Sender<String>) {
 /// Connects to buds if available
 async fn run_connection_listener(rx: Receiver<String>) {
     for i in rx {
-        println!("{:?}", i);
-        let connection = connect_rfcomm(i).await;
+        let dev_addr = i;
+        let connection = connect_rfcomm(&dev_addr).await;
+
         if let Err(err) = connection {
-            eprintln!("Cant get rfcomm channel to work: {}", err);
+            eprintln!(
+                "Cant get rfcomm channel to work with device '{}': {}",
+                dev_addr, err
+            );
             continue;
         }
 
+        println!("Successfully established connection to {}", dev_addr);
         let connection = connection.unwrap();
-        println!("{:?}", connection);
     }
 }
 
@@ -91,5 +91,6 @@ async fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, Box<dy
     Ok(BudsConnection {
         addr: addr.as_ref().to_owned(),
         stream,
+        fd: socket.get_fd(),
     })
 }
