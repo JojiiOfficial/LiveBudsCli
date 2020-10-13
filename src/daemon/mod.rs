@@ -5,9 +5,10 @@ mod connection_handler;
 mod unix_socket;
 mod utils;
 
+use async_mutex::Mutex;
 use bud_connection::ConnectInfo;
 use client_handler::ConnectionData;
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{mpsc, Arc};
 
 /// Starts the complete daemon
 pub async fn run_daemon() {

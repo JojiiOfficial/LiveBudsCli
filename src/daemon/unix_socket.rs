@@ -1,8 +1,12 @@
 use super::client_handler::ConnectionData;
+use async_mutex::Mutex;
+use async_std::io::prelude::*;
 use async_std::io::{BufReader, BufWriter};
 use async_std::os::unix::net::{UnixListener, UnixStream};
 use async_std::prelude::*;
-use std::sync::{Arc, Mutex};
+use galaxy_buds_live_rs::message::{self, set_noise_reduction, Payload};
+use std::os::unix::io::FromRawFd;
+use std::sync::Arc;
 
 /// Runs the unix socket which
 /// provides the userspace API
@@ -34,9 +38,17 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
 
     loop {
         read_stream.read_line(&mut buff).await.unwrap();
+        let locked = cd.lock().await;
+        let info = locked.get_first_device().unwrap();
 
-        let v = cd.lock().unwrap().data();
+        if buff == "a\n" {
+            let mut v = locked.get_first_stream();
+            let send_msg = set_noise_reduction::new(true);
+            v.write(&send_msg.to_byte_array()).await.unwrap();
+            continue;
+        }
 
+        let v = info;
         write_stream
             .write(format!("{:?}", v).as_bytes())
             .await

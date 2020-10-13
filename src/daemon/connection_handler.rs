@@ -1,17 +1,15 @@
 use super::bud_connection::{BudsConnection, ConnectInfo};
 use super::client_handler::{self, ConnectionData};
 
+use async_mutex::Mutex;
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
-use std::marker::Send;
 use std::sync::mpsc::Receiver;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::{error::Error, str::FromStr};
 
 pub struct ConnHandler {
     connected_devices: Vec<String>,
 }
-
-unsafe impl Send for ConnHandler {}
 
 impl ConnHandler {
     pub fn new() -> Self {

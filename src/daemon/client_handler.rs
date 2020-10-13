@@ -1,12 +1,11 @@
 use super::bud_connection::{BudsConnection, BudsInfo};
+use async_mutex::Mutex;
 use async_std::io::prelude::*;
+use async_std::os::unix::net::UnixStream;
 use galaxy_buds_live_rs::message::{
-    self, extended_status_updated::ExtendedStatusUpdate, ids, status_updated::StatusUpdate,
+    extended_status_updated::ExtendedStatusUpdate, ids, status_updated::StatusUpdate, Message,
 };
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, sync::Arc};
 
 /// Shared data for informations about connected buds
 pub struct ConnectionData {
@@ -20,41 +19,46 @@ impl ConnectionData {
         }
     }
 
-    pub fn data(&self) -> String {
-        format!("{:?}", self.data)
+    pub fn get_first_device(&self) -> Option<&BudsInfo> {
+        for (_, v) in &self.data {
+            return Some(v);
+        }
+        None
+    }
+
+    pub fn get_first_stream(&self) -> &UnixStream {
+        &self.get_first_device().unwrap().stream
     }
 }
 
 /// Read buds data
 pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionData>>) {
     let mut stream = connection.socket.get_stream();
-
     let mut buffer = [0; 2048];
+
     loop {
         let r = stream.read(&mut buffer[..]).await;
         if let Err(_) = r {
             return;
         }
 
-        let num_bytes_read = r.unwrap();
-        let buff = &buffer[0..num_bytes_read];
-        let id = buff[3].to_be();
-        let message = message::Message::new(buff);
+        // The received message from the buds
+        let message = Message::new(&buffer[0..r.unwrap()]);
 
-        let mut lock = cd.lock().unwrap();
+        let mut lock = cd.lock().await;
         let info = lock
             .data
             .entry(connection.addr.clone())
-            .or_insert(BudsInfo::new());
+            .or_insert(BudsInfo::new(stream.clone()));
 
-        if id == ids::STATUS_UPDATED {
+        if message.get_id() == ids::STATUS_UPDATED {
             let update: StatusUpdate = message.into();
             info.batt_left = update.battery_left;
             info.batt_right = update.battery_right;
             continue;
         }
 
-        if id == ids::EXTENDED_STATUS_UPDATED {
+        if message.get_id() == ids::EXTENDED_STATUS_UPDATED {
             let update: ExtendedStatusUpdate = message.into();
             info.batt_left = update.battery_left;
             info.batt_right = update.battery_right;
