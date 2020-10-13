@@ -1,4 +1,5 @@
 use super::bud_connection::BudsInfo;
+use super::buds_config::Config;
 use super::connection_handler::ConnectionData;
 use super::utils::str_to_bool;
 
@@ -18,14 +19,18 @@ use serde_derive::{Deserialize, Serialize};
 use std::{path::Path, sync::Arc};
 
 /// Runs the unix socket which provides the user API
-pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>) {
+pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>, config: Arc<Mutex<Config>>) {
     let p = p.as_ref();
     let listener = UnixListener::bind(p).await.unwrap();
     let mut incoming = listener.incoming();
 
     loop {
         while let Some(stream) = incoming.next().await {
-            async_std::task::spawn(handle_client(stream.unwrap(), Arc::clone(&cd)));
+            async_std::task::spawn(handle_client(
+                stream.unwrap(),
+                Arc::clone(&cd),
+                Arc::clone(&config),
+            ));
         }
     }
 }
@@ -54,10 +59,10 @@ impl<T> Response<T>
 where
     T: serde::ser::Serialize,
 {
-    fn new_success<S: AsRef<str>>(device: S, payload: Option<T>) -> Self {
+    fn new_success<S: AsRef<str>>(device_addr: S, payload: Option<T>) -> Self {
         Self {
             status: "success".to_owned(),
-            device: device.as_ref().to_owned(),
+            device: device_addr.as_ref().to_owned(),
             payload,
             status_message: None,
         }
@@ -74,7 +79,11 @@ where
 }
 
 /// Handle a unix socket connection
-async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
+async fn handle_client(
+    stream: UnixStream,
+    cd: Arc<Mutex<ConnectionData>>,
+    config: Arc<Mutex<Config>>,
+) {
     let mut read_stream = BufReader::new(&stream);
     let mut write_stream = BufWriter::new(&stream);
     let mut buff = String::new();
@@ -119,7 +128,11 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
             }
             "set_value" => {
                 let mut device = connection_data.get_device_mut(&device_addr).unwrap();
-                new_payload = set_value(&payload, device_addr.clone(), &mut device).await
+                new_payload = set_buds_value(&payload, device_addr.clone(), &mut device).await
+            }
+            "set_config" => {
+                let device = connection_data.get_device(&device_addr).unwrap();
+                new_payload = Response::new_success(device.address.clone(), None);
             }
             _ => continue,
         };
@@ -131,7 +144,11 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
     }
 }
 
-async fn set_value<T>(payload: &Request, address: String, device_data: &mut BudsInfo) -> Response<T>
+async fn set_buds_value<T>(
+    payload: &Request,
+    address: String,
+    device_data: &mut BudsInfo,
+) -> Response<T>
 where
     T: serde::ser::Serialize,
 {
@@ -146,7 +163,7 @@ where
     let value = payload.opt_param2.clone().unwrap();
 
     // Run desired command
-    let res = set(key.as_str(), value.as_str(), device_data).await;
+    let res = set_buds_option(key.as_str(), value.as_str(), device_data).await;
 
     // Return success or error based on the success of the set command
     if res.is_ok() {
@@ -157,7 +174,7 @@ where
 }
 
 // Set the actual value
-async fn set(key: &str, value: &str, device_data: &mut BudsInfo) -> Result<(), String> {
+async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> Result<(), String> {
     match key {
         // Set noise reduction
         "noise_reduction" => {

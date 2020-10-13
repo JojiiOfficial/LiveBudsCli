@@ -1,5 +1,6 @@
 use super::bluetooth;
 use super::bud_connection::{BudsInfo, ConnectionEventInfo};
+use super::buds_config::Config;
 use super::client_handler;
 
 use async_std::sync::Mutex;
@@ -113,7 +114,11 @@ impl ConnectionData {
 }
 
 /// run the connection handler
-pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionData>>) {
+pub async fn run(
+    rec: Receiver<ConnectionEventInfo>,
+    cd: Arc<Mutex<ConnectionData>>,
+    config: Arc<Mutex<Config>>,
+) {
     let mut connection_handler = ConnHandler::new(cd);
 
     for i in rec {
@@ -144,6 +149,7 @@ pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionDat
         async_std::task::spawn(client_handler::handle_client(
             connection.unwrap(),
             Arc::clone(&connection_handler.get_connection_data()),
+            Arc::clone(&config),
         ));
     }
 }

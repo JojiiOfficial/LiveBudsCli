@@ -1,4 +1,5 @@
 use super::bud_connection::{BudsConnection, BudsInfo};
+use super::buds_config::Config;
 use super::connection_handler::ConnectionData;
 
 use async_std::io::prelude::*;
@@ -10,7 +11,11 @@ use galaxy_buds_live_rs::message::{
 use std::sync::Arc;
 
 /// Read buds data
-pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionData>>) {
+pub async fn handle_client(
+    connection: BudsConnection,
+    cd: Arc<Mutex<ConnectionData>>,
+    config: Arc<Mutex<Config>>,
+) {
     let mut stream = connection.socket.get_stream();
     let mut buffer = [0; 2048];
 
