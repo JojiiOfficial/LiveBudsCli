@@ -1,8 +1,6 @@
 mod daemon;
 
-use async_std;
 use clap::{clap_app, crate_version};
-use ofiles;
 
 use std::path::Path;
 use std::process::exit;
@@ -60,7 +58,7 @@ pub fn check_daemon_running<P: AsRef<Path>>(p: P) -> Result<(), String> {
 
     // Check if the socket file is used by a running program
     if let Ok(files) = ofiles::opath(&p) {
-        if files.len() == 0 {
+        if files.is_empty() {
             try_delete()?;
         }
 

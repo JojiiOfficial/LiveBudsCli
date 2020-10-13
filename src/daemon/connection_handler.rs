@@ -30,16 +30,12 @@ impl ConnHandler {
 
     /// Check whether a given device is connected or not
     pub fn has_device(&self, dev: &str) -> bool {
-        self.connected_devices
-            .as_slice()
-            .into_iter()
-            .find(|i| **i == *dev)
-            .is_some()
+        self.connected_devices.iter().any(|i| **i == *dev)
     }
 
     /// Add a device to the ConnHandler
     pub fn add_device(&mut self, dev: String) {
-        self.connected_devices.push(dev.clone());
+        self.connected_devices.push(dev);
     }
 
     /// Remove a device from the ConnHandler
@@ -55,7 +51,7 @@ impl ConnHandler {
 
     /// Get the position of a device in the ConnHandler device vector
     pub fn get_item_pos(&self, dev: &str) -> Option<usize> {
-        for (i, v) in self.connected_devices.as_slice().into_iter().enumerate() {
+        for (i, v) in self.connected_devices.iter().enumerate() {
             if *v == *dev {
                 return Some(i);
             }
@@ -79,11 +75,11 @@ impl ConnectionData {
     /// Returns a device by its address. If no address is set,
     /// the first device gets returned
     pub fn get_device(&self, addr: &str) -> Option<&BudsInfo> {
-        if addr.len() == 0 {
+        if addr.is_empty() {
             return self.get_first_device();
         }
 
-        for (_, v) in &self.data {
+        for v in self.data.values() {
             if v.address == *addr {
                 return Some(v);
             }
@@ -104,7 +100,7 @@ impl ConnectionData {
 
     // Get the full address of a device
     pub fn get_device_address(&self, addr: &str) -> Option<String> {
-        if addr.len() == 0 {
+        if addr.is_empty() {
             return self.get_first_device().map(|i| i.address.clone());
         }
 
@@ -112,11 +108,7 @@ impl ConnectionData {
     }
 
     fn get_first_device(&self) -> Option<&BudsInfo> {
-        for (_, v) in &self.data {
-            return Some(v);
-        }
-
-        None
+        self.data.iter().next().map(|(_, v)| v)
     }
 }
 

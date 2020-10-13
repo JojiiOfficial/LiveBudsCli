@@ -5,7 +5,15 @@ pub fn is_bt_device_buds_live(device: &BluetoothDevice) -> bool {
     device
         .get_uuids()
         .unwrap()
-        .into_iter()
-        .find(|s| s.to_lowercase() == "00001101-0000-1000-8000-00805f9b34fb")
-        .is_some()
+        .iter()
+        .any(|s| s.to_lowercase() == "00001101-0000-1000-8000-00805f9b34fb")
+}
+
+/// Converts a str to a boolean. All undefineable
+/// values are false
+pub fn str_to_bool<S: AsRef<str>>(s: S) -> bool {
+    matches!(
+        s.as_ref().to_lowercase().as_str(),
+        "1" | "true" | "yes" | "y"
+    )
 }

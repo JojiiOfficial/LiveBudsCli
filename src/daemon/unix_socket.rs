@@ -1,5 +1,6 @@
 use super::bud_connection::BudsInfo;
 use super::connection_handler::ConnectionData;
+use super::utils::str_to_bool;
 
 use async_std::{
     io::{prelude::*, BufReader, BufWriter},
@@ -23,13 +24,7 @@ pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>) {
     let mut incoming = listener.incoming();
 
     loop {
-        for stream in incoming.next().await {
-            if let Err(err) = stream {
-                // This is fatal so we can exit the program here.
-                panic!("Error: {}", err);
-            }
-
-            // Start task to handle multiple client socket connections
+        while let Some(stream) = incoming.next().await {
             async_std::task::spawn(handle_client(stream.unwrap(), Arc::clone(&cd)));
         }
     }
@@ -89,7 +84,7 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
         buff.clear();
 
         // Read the request
-        if let Err(_) = read_stream.read_line(&mut buff).await {
+        if read_stream.read_line(&mut buff).await.is_err() {
             return;
         }
 
@@ -99,8 +94,6 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
             Ok(p) => p,
             Err(_) => return,
         };
-
-        println!("{:?}", payload);
 
         let mut connection_data = cd.lock().await;
         let device_addr = match connection_data
@@ -116,6 +109,7 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
 
         let new_payload;
 
+        // Run desired action
         match payload.cmd.as_str() {
             "get_status" => {
                 new_payload = Response::new_success(
@@ -137,12 +131,7 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
     }
 }
 
-async fn set_value<T>(
-    payload: &Request,
-    address: String,
-    device_data: &mut BudsInfo,
-    //o: &mut ConnectionData,
-) -> Response<T>
+async fn set_value<T>(payload: &Request, address: String, device_data: &mut BudsInfo) -> Response<T>
 where
     T: serde::ser::Serialize,
 {
@@ -157,7 +146,19 @@ where
     let value = payload.opt_param2.clone().unwrap();
 
     // Run desired command
-    let res = match key.as_str() {
+    let res = set(key.as_str(), value.as_str(), device_data).await;
+
+    // Return success or error based on the success of the set command
+    if res.is_ok() {
+        Response::new_success(device_data.address.clone(), None)
+    } else {
+        get_err(res.err().unwrap().as_str())
+    }
+}
+
+// Set the actual value
+async fn set(key: &str, value: &str, device_data: &mut BudsInfo) -> Result<(), String> {
+    match key {
         // Set noise reduction
         "noise_reduction" => {
             let value = str_to_bool(&value);
@@ -192,21 +193,7 @@ where
             }
             Err(_) => Err("could not parse value".to_string()),
         },
-        _ => return get_err("Invaild key to set to"),
-    };
-
-    // Return success or error based on the success of the set command
-    if res.is_ok() {
-        Response::new_success(device_data.address.clone(), None)
-    } else {
-        get_err(res.err().unwrap().as_str())
-    }
-}
-
-fn str_to_bool<S: AsRef<str>>(s: S) -> bool {
-    match s.as_ref().to_lowercase().as_str() {
-        "1" | "true" | "yes" | "y" => true,
-        _ => false,
+        _ => Err("Invaild key to set to".to_string()),
     }
 }
 
@@ -225,7 +212,7 @@ where
     }
 
     // Flush writer
-    if let Err(_) = write_stream.flush().await {
+    if write_stream.flush().await.is_err() {
         return false;
     }
 

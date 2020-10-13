@@ -27,7 +27,7 @@ pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionD
         let info = lock
             .data
             .entry(connection.addr.clone())
-            .or_insert(BudsInfo::new(stream.clone(), &connection.addr));
+            .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr));
 
         if message.get_id() == ids::STATUS_UPDATED {
             update_status(&message.into(), info);
