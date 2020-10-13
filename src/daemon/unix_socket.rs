@@ -7,20 +7,13 @@ use async_std::{
     sync::Mutex,
 };
 use galaxy_buds_live_rs::message::{set_noise_reduction, Payload};
-use ofiles;
-
 use std::path::Path;
-use std::process::exit;
 use std::sync::Arc;
 
 /// Runs the unix socket which
 /// provides the userspace API
-pub async fn run(cd: Arc<Mutex<ConnectionData>>) {
-    let p = Path::new("/tmp/buds-daemon.sock");
-    if check_daemon_running(p) {
-        exit(1);
-    }
-
+pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>) {
+    let p = p.as_ref();
     let listener = UnixListener::bind(p).await.unwrap();
     let mut incoming = listener.incoming();
 
@@ -38,37 +31,6 @@ pub async fn run(cd: Arc<Mutex<ConnectionData>>) {
             }
         }
     }
-}
-
-pub fn check_daemon_running<P: AsRef<Path>>(p: P) -> bool {
-    let p = p.as_ref();
-
-    if !p.exists() {
-        return false;
-    }
-
-    if let Ok(files) = ofiles::opath(&p) {
-        if files.len() == 0 {
-            std::fs::remove_file(p)
-                .expect(format!("Can't delete old socket file: {}", p.display()).as_str());
-            return false;
-        }
-
-        println!(
-            "A daemon is already running: {}",
-            files
-                .into_iter()
-                .map(|i| format!("{:?} ", i))
-                .collect::<String>()
-        );
-    } else {
-        // if no proc found, try to delete the socket!
-        std::fs::remove_file(p)
-            .expect(format!("Can't delete old socket file: {}", p.display()).as_str());
-        return false;
-    }
-
-    true
 }
 
 /// Handle unix socket connections

@@ -12,7 +12,7 @@ use connection_handler::ConnectionData;
 use std::sync::{mpsc, Arc};
 
 /// Starts the complete daemon
-pub async fn run_daemon() {
+pub async fn run_daemon(p: String) {
     daemonize_self(); // Put into background
 
     // Exchange connection events between bluetooth and connection handler
@@ -22,7 +22,7 @@ pub async fn run_daemon() {
     let arc = Arc::new(Mutex::new(ConnectionData::new()));
 
     async_std::task::spawn(connection_handler::run(conn_rx, Arc::clone(&arc)));
-    async_std::task::spawn(unix_socket::run(Arc::clone(&arc)));
+    async_std::task::spawn(unix_socket::run(p, Arc::clone(&arc)));
     bluetooth::run(conn_tx).await;
 }
 
