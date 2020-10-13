@@ -14,6 +14,8 @@ async fn main() {
     // run only the daemon if desired
     if clap.is_present("daemon") {
         daemon::run_daemon().await;
+        println!("daemon exit");
+
         return;
     }
 

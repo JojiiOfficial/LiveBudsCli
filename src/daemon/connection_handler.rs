@@ -94,6 +94,8 @@ impl ConnectionData {
 pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionData>>) {
     let mut connection_handler = ConnHandler::new(cd);
 
+    println!("running connectionhandler");
+
     for i in rec {
         if !i.connected {
             // remove connection

@@ -1,16 +1,27 @@
 use super::connection_handler::ConnectionData;
-use async_std::io::prelude::*;
-use async_std::io::{BufReader, BufWriter};
-use async_std::os::unix::net::{UnixListener, UnixStream};
-use async_std::prelude::*;
-use async_std::sync::Mutex;
+
+use async_std::{
+    io::{prelude::*, BufReader, BufWriter},
+    os::unix::net::{UnixListener, UnixStream},
+    prelude::*,
+    sync::Mutex,
+};
 use galaxy_buds_live_rs::message::{set_noise_reduction, Payload};
+use ofiles;
+
+use std::path::Path;
+use std::process::exit;
 use std::sync::Arc;
 
 /// Runs the unix socket which
 /// provides the userspace API
 pub async fn run(cd: Arc<Mutex<ConnectionData>>) {
-    let listener = UnixListener::bind("/tmp/buds-daemon.sock").await.unwrap();
+    let p = Path::new("/tmp/buds-daemon.sock");
+    if check_daemon_running(p) {
+        exit(1);
+    }
+
+    let listener = UnixListener::bind(p).await.unwrap();
     let mut incoming = listener.incoming();
 
     loop {
@@ -29,7 +40,38 @@ pub async fn run(cd: Arc<Mutex<ConnectionData>>) {
     }
 }
 
-/// Handle socket connections
+pub fn check_daemon_running<P: AsRef<Path>>(p: P) -> bool {
+    let p = p.as_ref();
+
+    if !p.exists() {
+        return false;
+    }
+
+    if let Ok(files) = ofiles::opath(&p) {
+        if files.len() == 0 {
+            std::fs::remove_file(p)
+                .expect(format!("Can't delete old socket file: {}", p.display()).as_str());
+            return false;
+        }
+
+        println!(
+            "A daemon is already running: {}",
+            files
+                .into_iter()
+                .map(|i| format!("{:?} ", i))
+                .collect::<String>()
+        );
+    } else {
+        // if no proc found, try to delete the socket!
+        std::fs::remove_file(p)
+            .expect(format!("Can't delete old socket file: {}", p.display()).as_str());
+        return false;
+    }
+
+    true
+}
+
+/// Handle unix socket connections
 async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
     let mut read_stream = BufReader::new(&stream);
     let mut write_stream = BufWriter::new(&stream);

@@ -17,3 +17,4 @@ async-std = { version = "1.6.5", features = ["attributes"] }
 futures = "0.3.6"
 blurz = "0.4.0"
 bluetooth-serial-port-async = "0.6.0"
+ofiles = "0.1.0"
