@@ -3,6 +3,7 @@
  * to the galaxy buds if available
  */
 
+use super::bud_connection::ConnectInfo;
 use super::utils;
 
 use blurz::{
@@ -11,18 +12,10 @@ use blurz::{
     BluetoothSession,
 };
 
-use std::sync::mpsc::{self, Sender};
-
-/// Run the bluetooth futures
-pub async fn run(sender: Sender<String>) {
-    let (connect_tx, connect_rx) = mpsc::channel::<String>();
-
-    //async_std::task::spawn(run_connection_listener(connect_rx, sender));
-    run_bt_listener(sender).await;
-}
+use std::sync::mpsc::Sender;
 
 /// Listens for new Bluethooth connections
-async fn run_bt_listener(sender: Sender<String>) {
+pub async fn run(sender: Sender<ConnectInfo>) {
     let session = &BluetoothSession::create_session(None).unwrap();
 
     loop {
@@ -45,13 +38,9 @@ async fn run_bt_listener(sender: Sender<String>) {
                     continue;
                 }
 
-                if connected {
-                    println!("Buds connected!!!");
-                    //tx.send(device.get_address().unwrap()).unwrap();
-                    sender.send(device.get_address().unwrap()).unwrap();
-                } else {
-                    println!("Buds disconnected");
-                }
+                sender
+                    .send(ConnectInfo::new(device.get_address().unwrap(), connected))
+                    .unwrap();
             }
         }
     }

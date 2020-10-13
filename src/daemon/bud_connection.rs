@@ -7,3 +7,14 @@ pub struct BudsConnection {
     pub socket: BtSocket,
     pub fd: i32,
 }
+
+#[derive(Debug)]
+pub struct ConnectInfo {
+    pub addr: String,
+    pub connected: bool,
+}
+impl ConnectInfo {
+    pub fn new(addr: String, connected: bool) -> Self {
+        ConnectInfo { addr, connected }
+    }
+}

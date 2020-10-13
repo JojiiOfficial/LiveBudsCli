@@ -4,13 +4,14 @@ mod connection_handler;
 mod unix_socket;
 mod utils;
 
+use bud_connection::ConnectInfo;
 use std::sync::mpsc;
 
 /// Starts the complete daemon
 pub async fn run_daemon() {
     daemonize_self(); // Put into background
 
-    let (conn_tx, conn_rx) = mpsc::channel::<String>();
+    let (conn_tx, conn_rx) = mpsc::channel::<ConnectInfo>();
 
     async_std::task::spawn(connection_handler::run(conn_rx));
     async_std::task::spawn(unix_socket::run());
