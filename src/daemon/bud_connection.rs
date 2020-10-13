@@ -10,17 +10,19 @@ pub struct BudsConnection {
 }
 
 #[derive(Debug)]
-pub struct ConnectInfo {
+pub struct ConnectionEventInfo {
     pub addr: String,
     pub connected: bool,
 }
 
-impl ConnectInfo {
+impl ConnectionEventInfo {
     pub fn new(addr: String, connected: bool) -> Self {
-        ConnectInfo { addr, connected }
+        ConnectionEventInfo { addr, connected }
     }
 }
 
+/// Informations about a connected pair
+/// of Galaxy Buds live
 pub struct BudsInfo {
     pub stream: UnixStream,
     pub batt_left: i8,

@@ -1,5 +1,6 @@
 use blurz::BluetoothDevice;
 
+/// Checks whether a device is a pair of buds live
 pub fn is_bt_device_buds_live(device: &BluetoothDevice) -> bool {
     device
         .get_uuids()

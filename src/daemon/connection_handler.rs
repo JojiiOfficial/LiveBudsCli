@@ -1,4 +1,4 @@
-use super::bud_connection::{BudsConnection, ConnectInfo};
+use super::bud_connection::{BudsConnection, ConnectionEventInfo};
 use super::client_handler::{self, ConnectionData};
 
 use async_std::sync::Mutex;
@@ -7,12 +7,15 @@ use std::sync::mpsc::Receiver;
 use std::sync::Arc;
 use std::{error::Error, str::FromStr};
 
+/// The connection handler keeps track of
+/// all connected devices and its status
 pub struct ConnHandler {
     connected_devices: Vec<String>,
     connection_data: Arc<Mutex<ConnectionData>>,
 }
 
 impl ConnHandler {
+    /// Create a new Connection handler
     pub fn new(cd: Arc<Mutex<ConnectionData>>) -> Self {
         ConnHandler {
             connected_devices: Vec::new(),
@@ -20,10 +23,12 @@ impl ConnHandler {
         }
     }
 
+    /// Get an Arc::Clone of the ConnectionData
     pub fn get_connection_data(&self) -> Arc<Mutex<ConnectionData>> {
         Arc::clone(&self.connection_data)
     }
 
+    /// Check whether a given device is connected or not
     pub fn has_device(&self, dev: &str) -> bool {
         self.connected_devices
             .as_slice()
@@ -32,10 +37,12 @@ impl ConnHandler {
             .is_some()
     }
 
+    /// Add a device to the ConnHandler
     pub fn add_device(&mut self, dev: String) {
         self.connected_devices.push(dev.clone());
     }
 
+    /// Remove a device from the ConnHandler
     pub async fn remove_device(&mut self, dev: &str) {
         let pos = self.get_item_pos(dev);
         if pos.is_none() {
@@ -46,6 +53,7 @@ impl ConnHandler {
         self.connected_devices.remove(pos.unwrap());
     }
 
+    /// Get the position of a device in the ConnHandler device vector
     pub fn get_item_pos(&self, dev: &str) -> Option<usize> {
         for (i, v) in self.connected_devices.as_slice().into_iter().enumerate() {
             if *v == *dev {
@@ -57,7 +65,7 @@ impl ConnHandler {
 }
 
 /// run the connection handler
-pub async fn run(rec: Receiver<ConnectInfo>, cd: Arc<Mutex<ConnectionData>>) {
+pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionData>>) {
     let mut connection_handler = ConnHandler::new(cd);
 
     for i in rec {
@@ -67,11 +75,12 @@ pub async fn run(rec: Receiver<ConnectInfo>, cd: Arc<Mutex<ConnectionData>>) {
             continue;
         }
 
+        // Ignore already connected devices
         if connection_handler.has_device(i.addr.as_str()) {
-            println!("dev already connected!");
             continue;
         }
 
+        // Connect to the RFCOMM interface of the buds
         let connection = connect_rfcomm(&i.addr);
         if let Err(err) = connection {
             eprintln!("Error connecting to rfcomm:{:?}", err);
@@ -79,8 +88,11 @@ pub async fn run(rec: Receiver<ConnectInfo>, cd: Arc<Mutex<ConnectionData>>) {
         }
 
         println!("Connected successfully to Buds live!");
+
+        // Add device to the connection handler
         connection_handler.add_device(i.addr.to_owned());
 
+        // Create a new buds connection task
         async_std::task::spawn(client_handler::handle_client(
             connection.unwrap(),
             Arc::clone(&connection_handler.get_connection_data()),

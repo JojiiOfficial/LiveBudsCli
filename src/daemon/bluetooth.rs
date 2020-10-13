@@ -3,7 +3,7 @@
  * to the galaxy buds if available
  */
 
-use super::bud_connection::ConnectInfo;
+use super::bud_connection::ConnectionEventInfo;
 use super::utils;
 
 use blurz::{
@@ -15,7 +15,7 @@ use blurz::{
 use std::sync::mpsc::Sender;
 
 /// Listens for new Bluethooth connections
-pub async fn run(sender: Sender<ConnectInfo>) {
+pub async fn run(sender: Sender<ConnectionEventInfo>) {
     let session = &BluetoothSession::create_session(None).unwrap();
     let adapter: BluetoothAdapter = BluetoothAdapter::init(session).unwrap();
 
@@ -24,7 +24,10 @@ pub async fn run(sender: Sender<ConnectInfo>) {
         let device = BluetoothDevice::new(&session, device);
         if utils::is_bt_device_buds_live(&device) {
             sender
-                .send(ConnectInfo::new(device.get_address().unwrap(), connected))
+                .send(ConnectionEventInfo::new(
+                    device.get_address().unwrap(),
+                    connected,
+                ))
                 .unwrap();
         }
     };
