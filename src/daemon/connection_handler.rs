@@ -2,7 +2,6 @@ use super::bluetooth;
 use super::bud_connection::{BudsInfo, ConnectionEventInfo};
 use super::client_handler;
 
-use async_std::os::unix::net::UnixStream;
 use async_std::sync::Mutex;
 
 use std::collections::HashMap;

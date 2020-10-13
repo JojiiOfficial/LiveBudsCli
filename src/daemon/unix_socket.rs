@@ -103,24 +103,23 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
         println!("{:?}", payload);
 
         let connection_data = cd.lock().await;
+        let device_addr = &payload.device.clone().unwrap_or_default().clone();
 
         // Get requested device
-        let device_data =
-            match connection_data.get_device(&payload.device.clone().unwrap_or_default()) {
-                Some(v) => v,
-                None => {
-                    // TODO
-                    // Device not found!
-                    continue;
-                }
-            };
+        let device_data = match connection_data.get_device(device_addr) {
+            Some(v) => v,
+            None => {
+                // TODO
+                // Device not found!
+                continue;
+            }
+        };
 
         let new_payload;
 
         match payload.cmd.as_str() {
             "get_status" => {
-                new_payload =
-                    Response::new_success(device_data.address.clone(), Some(device_data.clone()));
+                new_payload = Response::new_success(device_data.address.clone(), Some(device_data));
             }
             "set_value" => new_payload = set_value(&payload, &device_data).await,
             _ => continue,
@@ -150,14 +149,19 @@ where
 
     // Run desired command
     let res = match key.as_str() {
+        // Set noise reduction
         "noise_reduction" => {
             let msg = set_noise_reduction::new(str_to_bool(&value));
             device_data.send(msg).await
         }
-        "equalizer" => {
-            let msg = new_equalizer(EqualizerType::decode(0));
-            device_data.send(msg).await
-        }
+        // Set EqualizerType command
+        "equalizer" => match value.parse::<u8>() {
+            Ok(val) => {
+                let msg = new_equalizer(EqualizerType::decode(val));
+                device_data.send(msg).await
+            }
+            Err(_) => Err("could not parse value".to_string()),
+        },
         _ => return get_err("Invaild key to set to"),
     };
 
