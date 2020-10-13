@@ -7,7 +7,8 @@ mod utils;
 
 use async_std::sync::Mutex;
 use bud_connection::ConnectionEventInfo;
-use client_handler::ConnectionData;
+use connection_handler::ConnectionData;
+
 use std::sync::{mpsc, Arc};
 
 /// Starts the complete daemon

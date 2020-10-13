@@ -1,11 +1,13 @@
-use super::bud_connection::{BudsConnection, ConnectionEventInfo};
-use super::client_handler::{self, ConnectionData};
+use super::bluetooth;
+use super::bud_connection::{BudsInfo, ConnectionEventInfo};
+use super::client_handler;
 
+use async_std::os::unix::net::UnixStream;
 use async_std::sync::Mutex;
-use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
+
+use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
-use std::{error::Error, str::FromStr};
 
 /// The connection handler keeps track of
 /// all connected devices and its status
@@ -64,6 +66,30 @@ impl ConnHandler {
     }
 }
 
+/// Shared data for informations about connected buds
+pub struct ConnectionData {
+    pub data: HashMap<String, BudsInfo>,
+}
+
+impl ConnectionData {
+    pub fn new() -> Self {
+        ConnectionData {
+            data: HashMap::new(),
+        }
+    }
+
+    pub fn get_first_device(&self) -> Option<&BudsInfo> {
+        for (_, v) in &self.data {
+            return Some(v);
+        }
+        None
+    }
+
+    pub fn get_first_stream(&self) -> &UnixStream {
+        &self.get_first_device().unwrap().stream
+    }
+}
+
 /// run the connection handler
 pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionData>>) {
     let mut connection_handler = ConnHandler::new(cd);
@@ -81,7 +107,7 @@ pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionDat
         }
 
         // Connect to the RFCOMM interface of the buds
-        let connection = connect_rfcomm(&i.addr);
+        let connection = bluetooth::connect_rfcomm(&i.addr);
         if let Err(err) = connection {
             eprintln!("Error connecting to rfcomm:{:?}", err);
             continue;
@@ -98,18 +124,4 @@ pub async fn run(rec: Receiver<ConnectionEventInfo>, cd: Arc<Mutex<ConnectionDat
             Arc::clone(&connection_handler.get_connection_data()),
         ));
     }
-}
-
-/// Connect to buds live via rfcomm proto
-fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, Box<dyn Error>> {
-    let mut socket = BtSocket::new(BtProtocol::RFCOMM)?;
-    let address = BtAddr::from_str(addr.as_ref()).unwrap();
-    socket.connect(&address)?;
-    let fd = socket.get_fd();
-
-    Ok(BudsConnection {
-        addr: addr.as_ref().to_owned(),
-        socket,
-        fd,
-    })
 }

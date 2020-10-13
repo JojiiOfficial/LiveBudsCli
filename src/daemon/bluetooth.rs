@@ -3,16 +3,18 @@
  * to the galaxy buds if available
  */
 
-use super::bud_connection::ConnectionEventInfo;
+use super::bud_connection::{BudsConnection, ConnectionEventInfo};
 use super::utils;
 
+use std::sync::mpsc::Sender;
+use std::{error::Error, str::FromStr};
+
+use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 use blurz::{
     BluetoothAdapter, BluetoothDevice,
     BluetoothEvent::{self, Connected},
     BluetoothSession,
 };
-
-use std::sync::mpsc::Sender;
 
 /// Listens for new Bluethooth connections
 pub async fn run(sender: Sender<ConnectionEventInfo>) {
@@ -55,4 +57,18 @@ pub async fn run(sender: Sender<ConnectionEventInfo>) {
             }
         }
     }
+}
+
+/// Connect to buds live via rfcomm proto
+pub fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, Box<dyn Error>> {
+    let mut socket = BtSocket::new(BtProtocol::RFCOMM)?;
+    let address = BtAddr::from_str(addr.as_ref()).unwrap();
+    socket.connect(&address)?;
+    let fd = socket.get_fd();
+
+    Ok(BudsConnection {
+        addr: addr.as_ref().to_owned(),
+        socket,
+        fd,
+    })
 }
