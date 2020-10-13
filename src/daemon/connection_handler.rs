@@ -1,12 +1,13 @@
 use super::bluetooth;
 use super::bud_connection::{BudsInfo, ConnectionEventInfo};
-use super::buds_config::Config;
+use super::buds_config::{BudsConfig, Config};
 use super::client_handler;
 
 use async_std::sync::Mutex;
 
+use async_std::sync::Arc;
 use std::collections::HashMap;
-use std::sync::{mpsc::Receiver, Arc};
+use std::sync::mpsc::Receiver;
 
 /// The connection handler keeps track of
 /// all connected devices and its status
@@ -144,6 +145,14 @@ pub async fn run(
 
         // Add device to the connection handler
         connection_handler.add_device(i.addr.to_owned());
+
+        // Set default config for (apparently) new device
+        let mut cfg = config.lock().await;
+        if !cfg.has_device_config(&i.addr) {
+            cfg.set_device_config(BudsConfig::new(i.addr.clone()))
+                .await
+                .unwrap();
+        }
 
         // Create a new buds connection task
         async_std::task::spawn(client_handler::handle_client(

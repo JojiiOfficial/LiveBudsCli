@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use async_std::fs::{self, File};
 use async_std::io::prelude::*;
-use std::path::PathBuf;
+use async_std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config {
@@ -19,31 +19,35 @@ pub struct BudsConfig {
 
 impl Config {
     /// Create a new config object
-    pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn new() -> Result<Self, String> {
         let config_file = Self::get_config_file().await?;
 
         println!("{:#?}", config_file);
 
         let config;
 
-        if !config_file.exists() {
+        if !config_file.exists().await {
             config = Self::default();
             config.save().await?;
         } else {
-            let conf_data = fs::read_to_string(&config_file).await?;
-            config = toml::from_str(&conf_data)?;
+            let conf_data = fs::read_to_string(&config_file)
+                .await
+                .map_err(|e| e.to_string())?;
+            config = toml::from_str(&conf_data).map_err(|e| e.to_string())?;
         }
 
         Ok(config)
     }
 
     // Save the config
-    pub async fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn save(&self) -> Result<(), String> {
         let config_file = Self::get_config_file().await?;
 
-        let s = toml::to_string_pretty(self)?;
-        let mut f = File::create(&config_file).await?;
-        f.write_all(&s.as_bytes()).await?;
+        let s = toml::to_string_pretty(self).map_err(|e| e.to_string())?;
+        let mut f = File::create(&config_file)
+            .await
+            .map_err(|e| e.to_string())?;
+        f.write_all(&s.as_bytes()).await.map_err(|e| e.to_string());
 
         Ok(())
     }
@@ -75,10 +79,7 @@ impl Config {
 
     /// Set the config of a specific device. If the config
     /// entry does not exist yet, it will be added
-    pub async fn set_device_config(
-        &mut self,
-        config: BudsConfig,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn set_device_config(&mut self, config: BudsConfig) -> Result<(), String> {
         if self.has_device_config(config.address.clone().as_str()) {
             let pos = self.get_device_config_pos(config.address.as_str()).unwrap();
             self.buds_settings[pos] = config;
@@ -90,11 +91,25 @@ impl Config {
     }
 
     // Create missing folders and return the config file
-    pub async fn get_config_file() -> Result<PathBuf, Box<dyn std::error::Error>> {
-        let conf_dir = home_dir().unwrap().join(".config").join("livebuds");
-        if !conf_dir.exists() {
-            fs::create_dir_all(&conf_dir).await?;
+    pub async fn get_config_file() -> Result<PathBuf, String> {
+        let conf_dir: PathBuf = home_dir().unwrap().join(".config").join("livebuds").into();
+        if !conf_dir.exists().await {
+            fs::create_dir_all(&conf_dir)
+                .await
+                .map_err(|e| e.to_string());
         }
+
         Ok(conf_dir.join("config.toml"))
+    }
+}
+
+impl BudsConfig {
+    /// Create a new device config
+    pub fn new(address: String) -> Self {
+        Self {
+            address,
+            auto_resume_music: true,
+            low_battery_notification: true,
+        }
     }
 }

@@ -26,6 +26,7 @@ pub async fn run_daemon(p: String) {
     let config = buds_config::Config::new()
         .await
         .expect("Couldn't read config");
+
     let config = Arc::new(Mutex::new(config));
 
     // Run connection handler
