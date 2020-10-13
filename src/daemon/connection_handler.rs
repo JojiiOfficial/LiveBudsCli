@@ -77,15 +77,28 @@ impl ConnectionData {
         }
     }
 
-    pub fn get_first_device(&self) -> Option<&BudsInfo> {
-        for (_, v) in &self.data {
-            return Some(v);
+    /// Returns a device by its address. If no address is set,
+    /// the first device gets returned
+    pub fn get_device(&self, addr: &str) -> Option<&BudsInfo> {
+        if addr.len() == 0 {
+            return self.get_first_device();
         }
+
+        for (_, v) in &self.data {
+            if v.address == *addr {
+                return Some(v);
+            }
+        }
+
         None
     }
 
-    pub fn get_first_stream(&self) -> &UnixStream {
-        &self.get_first_device().unwrap().stream
+    fn get_first_device(&self) -> Option<&BudsInfo> {
+        for (_, v) in &self.data {
+            return Some(v);
+        }
+
+        None
     }
 }
 

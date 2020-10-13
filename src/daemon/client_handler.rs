@@ -27,7 +27,7 @@ pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionD
         let info = lock
             .data
             .entry(connection.addr.clone())
-            .or_insert(BudsInfo::new(stream.clone()));
+            .or_insert(BudsInfo::new(stream.clone(), &connection.addr));
 
         if message.get_id() == ids::STATUS_UPDATED {
             update_status(&message.into(), info);
@@ -45,7 +45,7 @@ pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionD
 fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
     info.batt_left = update.battery_left;
     info.batt_right = update.battery_right;
-    info.battery_case = update.battery_case;
+    info.batt_case = update.battery_case;
     info.placement_left = update.placement_left;
     info.placement_right = update.placement_right;
     info.equalizer_type = update.equalizer_type;
@@ -57,7 +57,7 @@ fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
 fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
     info.batt_left = update.battery_left;
     info.batt_right = update.battery_right;
-    info.battery_case = update.battery_case;
+    info.batt_case = update.battery_case;
     info.placement_left = update.placement_left;
     info.placement_right = update.placement_right;
 }
