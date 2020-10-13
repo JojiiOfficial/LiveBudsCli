@@ -34,6 +34,12 @@ async fn main() {
         return;
     }
 
+    // We want to start a daemon here if not running
+    if check_daemon_running(DAEMON_PATH.to_owned()).is_ok() {
+        println!("would start daemon here");
+        // TODO RUN DAEMON HERE
+    }
+
     unimplemented!();
 }
 
