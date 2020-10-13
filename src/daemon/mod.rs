@@ -5,7 +5,7 @@ mod connection_handler;
 mod unix_socket;
 mod utils;
 
-use async_mutex::Mutex;
+use async_std::sync::Mutex;
 use bud_connection::ConnectInfo;
 use client_handler::ConnectionData;
 use std::sync::{mpsc, Arc};

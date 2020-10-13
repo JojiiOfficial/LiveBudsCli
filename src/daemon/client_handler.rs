@@ -1,7 +1,7 @@
 use super::bud_connection::{BudsConnection, BudsInfo};
-use async_mutex::Mutex;
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
+use async_std::sync::Mutex;
 use galaxy_buds_live_rs::message::{
     extended_status_updated::ExtendedStatusUpdate, ids, status_updated::StatusUpdate, Message,
 };

@@ -1,9 +1,9 @@
 use super::client_handler::ConnectionData;
-use async_mutex::Mutex;
 use async_std::io::prelude::*;
 use async_std::io::{BufReader, BufWriter};
 use async_std::os::unix::net::{UnixListener, UnixStream};
 use async_std::prelude::*;
+use async_std::sync::Mutex;
 use galaxy_buds_live_rs::message::{self, set_noise_reduction, Payload};
 use std::os::unix::io::FromRawFd;
 use std::sync::Arc;
@@ -37,6 +37,8 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
     let mut buff = String::new();
 
     loop {
+        buff.clear();
+
         read_stream.read_line(&mut buff).await.unwrap();
         let locked = cd.lock().await;
         let info = locked.get_first_device().unwrap();
@@ -57,7 +59,5 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
         if let Err(_) = write_stream.flush().await {
             return;
         }
-
-        buff.clear();
     }
 }

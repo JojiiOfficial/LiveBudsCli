@@ -275,7 +275,6 @@ dependencies = [
 name = "earbuds"
 version = "0.1.0"
 dependencies = [
- "async-mutex",
  "async-std",
  "bluetooth-serial-port-async",
  "blurz",

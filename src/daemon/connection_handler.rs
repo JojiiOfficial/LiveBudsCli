@@ -1,7 +1,7 @@
 use super::bud_connection::{BudsConnection, ConnectInfo};
 use super::client_handler::{self, ConnectionData};
 
-use async_mutex::Mutex;
+use async_std::sync::Mutex;
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 use std::sync::mpsc::Receiver;
 use std::sync::Arc;
@@ -45,7 +45,6 @@ impl ConnHandler {
                 return Some(i);
             }
         }
-
         None
     }
 }
