@@ -6,15 +6,15 @@
 use super::bud_connection::{BudsConnection, ConnectionEventInfo};
 use super::utils;
 
-use std::sync::mpsc::Sender;
-use std::{error::Error, str::FromStr};
-
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 use blurz::{
     BluetoothAdapter, BluetoothDevice,
     BluetoothEvent::{self, Connected},
     BluetoothSession,
 };
+
+use std::sync::mpsc::Sender;
+use std::{error::Error, str::FromStr};
 
 /// Listens for new Bluethooth connections
 pub async fn run(sender: Sender<ConnectionEventInfo>) {

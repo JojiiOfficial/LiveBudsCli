@@ -6,6 +6,7 @@ use async_std::sync::Mutex;
 use galaxy_buds_live_rs::message::{
     extended_status_updated::ExtendedStatusUpdate, ids, status_updated::StatusUpdate, Message,
 };
+
 use std::sync::Arc;
 
 /// Read buds data
@@ -14,13 +15,13 @@ pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionD
     let mut buffer = [0; 2048];
 
     loop {
-        let r = stream.read(&mut buffer[..]).await;
-        if let Err(_) = r {
-            return;
-        }
+        let bytes_read = match stream.read(&mut buffer[..]).await {
+            Ok(v) => v,
+            Err(_) => return,
+        };
 
         // The received message from the buds
-        let message = Message::new(&buffer[0..r.unwrap()]);
+        let message = Message::new(&buffer[0..bytes_read]);
 
         let mut lock = cd.lock().await;
         let info = lock

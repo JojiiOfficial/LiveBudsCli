@@ -7,8 +7,8 @@ use async_std::{
     sync::Mutex,
 };
 use galaxy_buds_live_rs::message::{set_noise_reduction, Payload};
-use std::path::Path;
-use std::sync::Arc;
+
+use std::{path::Path, sync::Arc};
 
 /// Runs the unix socket which
 /// provides the userspace API

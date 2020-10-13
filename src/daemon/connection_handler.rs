@@ -6,8 +6,7 @@ use async_std::os::unix::net::UnixStream;
 use async_std::sync::Mutex;
 
 use std::collections::HashMap;
-use std::sync::mpsc::Receiver;
-use std::sync::Arc;
+use std::sync::{mpsc::Receiver, Arc};
 
 /// The connection handler keeps track of
 /// all connected devices and its status
