@@ -29,17 +29,34 @@ pub async fn handle_client(connection: BudsConnection, cd: Arc<Mutex<ConnectionD
             .or_insert(BudsInfo::new(stream.clone()));
 
         if message.get_id() == ids::STATUS_UPDATED {
-            let update: StatusUpdate = message.into();
-            info.batt_left = update.battery_left;
-            info.batt_right = update.battery_right;
+            update_status(&message.into(), info);
             continue;
         }
 
         if message.get_id() == ids::EXTENDED_STATUS_UPDATED {
-            let update: ExtendedStatusUpdate = message.into();
-            info.batt_left = update.battery_left;
-            info.batt_right = update.battery_right;
+            update_extended_status(&message.into(), info);
             continue;
         }
     }
+}
+
+// Update a BudsInfo to the values of an extended_status_update
+fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
+    info.batt_left = update.battery_left;
+    info.batt_right = update.battery_right;
+    info.battery_case = update.battery_case;
+    info.placement_left = update.placement_left;
+    info.placement_right = update.placement_right;
+    info.equalizer_type = update.equalizer_type;
+    info.touchpads_blocked = update.touchpads_blocked;
+    info.noise_reduction = update.noise_reduction;
+}
+
+// Update a BudsInfo to the values of an extended_status_update
+fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
+    info.batt_left = update.battery_left;
+    info.batt_right = update.battery_right;
+    info.battery_case = update.battery_case;
+    info.placement_left = update.placement_left;
+    info.placement_right = update.placement_right;
 }
