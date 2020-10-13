@@ -1,13 +1,9 @@
-use async_std::os::unix::net::UnixStream;
+use bluetooth_serial_port_async::BtSocket;
 
 /// An active connection to a pair of buds
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct BudsConnection {
     pub addr: String,
-    pub stream: UnixStream,
+    pub socket: BtSocket,
     pub fd: i32,
-}
-
-impl BudsConnection {
-    pub async fn run(self) {}
 }

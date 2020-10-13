@@ -4,20 +4,17 @@ mod connection_handler;
 mod unix_socket;
 mod utils;
 
-use bud_connection::BudsConnection;
-use connection_handler::ConnectionHandler;
-
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::mpsc;
 
 /// Starts the complete daemon
 pub async fn run_daemon() {
     daemonize_self(); // Put into background
 
-    let connections = Arc::new(Mutex::new(ConnectionHandler::new()));
+    let (conn_tx, conn_rx) = mpsc::channel::<String>();
 
-    async_std::task::spawn(bluetooth::run());
-    unix_socket::run().await;
+    async_std::task::spawn(connection_handler::run(conn_rx));
+    async_std::task::spawn(unix_socket::run());
+    bluetooth::run(conn_tx).await;
 }
 
 fn daemonize_self() {}
