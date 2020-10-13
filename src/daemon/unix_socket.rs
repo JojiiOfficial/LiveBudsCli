@@ -9,7 +9,7 @@ use async_std::{
 };
 use galaxy_buds_live_rs::message::{
     bud_property::{BudProperty, EqualizerType},
-    set_noise_reduction,
+    lock_touchpad, set_noise_reduction,
     simple::new_equalizer,
 };
 use serde_derive::{Deserialize, Serialize};
@@ -102,12 +102,11 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
 
         println!("{:?}", payload);
 
-        let connection_data = cd.lock().await;
-        let device_addr = &payload.device.clone().unwrap_or_default().clone();
-
-        // Get requested device
-        let device_data = match connection_data.get_device(device_addr) {
-            Some(v) => v,
+        let mut connection_data = cd.lock().await;
+        let device_addr = match connection_data
+            .get_device_address(&payload.device.clone().unwrap_or_default().clone())
+        {
+            Some(addr) => addr,
             None => {
                 // TODO
                 // Device not found!
@@ -119,9 +118,15 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
 
         match payload.cmd.as_str() {
             "get_status" => {
-                new_payload = Response::new_success(device_data.address.clone(), Some(device_data));
+                new_payload = Response::new_success(
+                    device_addr.clone(),
+                    Some(connection_data.get_device(&device_addr).unwrap()),
+                );
             }
-            "set_value" => new_payload = set_value(&payload, &device_data).await,
+            "set_value" => {
+                let mut device = connection_data.get_device_mut(&device_addr).unwrap();
+                new_payload = set_value(&payload, device_addr.clone(), &mut device).await
+            }
             _ => continue,
         };
 
@@ -132,12 +137,16 @@ async fn handle_client(stream: UnixStream, cd: Arc<Mutex<ConnectionData>>) {
     }
 }
 
-async fn set_value<T>(payload: &Request, device_data: &BudsInfo) -> Response<T>
+async fn set_value<T>(
+    payload: &Request,
+    address: String,
+    device_data: &mut BudsInfo,
+    //o: &mut ConnectionData,
+) -> Response<T>
 where
     T: serde::ser::Serialize,
 {
-    let get_err =
-        |msg: &str| -> Response<T> { Response::new_error(device_data.address.clone(), msg, None) };
+    let get_err = |msg: &str| -> Response<T> { Response::new_error(address.clone(), msg, None) };
 
     // Check required fields set
     if payload.opt_param1.is_none() || payload.opt_param2.is_none() {
@@ -151,14 +160,35 @@ where
     let res = match key.as_str() {
         // Set noise reduction
         "noise_reduction" => {
-            let msg = set_noise_reduction::new(str_to_bool(&value));
-            device_data.send(msg).await
+            let value = str_to_bool(&value);
+            let msg = set_noise_reduction::new(value);
+            let res = device_data.send(msg).await;
+            if res.is_ok() {
+                device_data.noise_reduction = value;
+            }
+            res
         }
+
+        // Set Touchpad lock
+        "lock_touchpad" => {
+            let value = str_to_bool(&value);
+            let msg = lock_touchpad::new(value);
+            let res = device_data.send(msg).await;
+            if res.is_ok() {
+                device_data.touchpads_blocked = value;
+            }
+            res
+        }
+
         // Set EqualizerType command
         "equalizer" => match value.parse::<u8>() {
             Ok(val) => {
-                let msg = new_equalizer(EqualizerType::decode(val));
-                device_data.send(msg).await
+                let eq_type = EqualizerType::decode(val);
+                let res = device_data.send(new_equalizer(eq_type)).await;
+                if res.is_ok() {
+                    device_data.equalizer_type = eq_type;
+                }
+                res
             }
             Err(_) => Err("could not parse value".to_string()),
         },

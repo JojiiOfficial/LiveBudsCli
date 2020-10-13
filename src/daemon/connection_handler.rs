@@ -92,6 +92,25 @@ impl ConnectionData {
         None
     }
 
+    /// Get device mutable
+    pub fn get_device_mut(&mut self, addr: &str) -> Option<&mut BudsInfo> {
+        for (_, v) in self.data.iter_mut() {
+            if v.address == *addr {
+                return Some(v);
+            }
+        }
+        None
+    }
+
+    // Get the full address of a device
+    pub fn get_device_address(&self, addr: &str) -> Option<String> {
+        if addr.len() == 0 {
+            return self.get_first_device().map(|i| i.address.clone());
+        }
+
+        self.get_device(addr).map(|i| i.address.clone())
+    }
+
     fn get_first_device(&self) -> Option<&BudsInfo> {
         for (_, v) in &self.data {
             return Some(v);
