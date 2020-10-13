@@ -4,8 +4,7 @@ use async_std::io::{BufReader, BufWriter};
 use async_std::os::unix::net::{UnixListener, UnixStream};
 use async_std::prelude::*;
 use async_std::sync::Mutex;
-use galaxy_buds_live_rs::message::{self, set_noise_reduction, Payload};
-use std::os::unix::io::FromRawFd;
+use galaxy_buds_live_rs::message::{set_noise_reduction, Payload};
 use std::sync::Arc;
 
 /// Runs the unix socket which
