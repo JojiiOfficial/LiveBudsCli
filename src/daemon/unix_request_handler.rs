@@ -1,6 +1,6 @@
+use super::bluetooth::rfcomm_connector::ConnectionData;
 use super::buds_config::Config;
 use super::buds_info::{BudsInfo, BudsInfoInner};
-use super::connection_handler::ConnectionData;
 use super::utils::str_to_bool;
 
 use async_std::{

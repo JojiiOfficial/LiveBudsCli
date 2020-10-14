@@ -1,7 +1,7 @@
-use super::bluetooth::BudsConnection;
-use super::buds_config::{BudsConfig, Config};
-use super::buds_info::BudsInfo;
-use super::connection_handler::ConnHandler;
+use super::super::buds_config::{BudsConfig, Config};
+use super::super::buds_info::BudsInfo;
+use super::bt_connection_listener::BudsConnection;
+use super::rfcomm_connector::ConnHandler;
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
@@ -15,7 +15,7 @@ use notify_rust::Notification;
 use std::sync::Arc;
 
 /// Read buds data
-pub async fn handle_client(
+pub async fn start_listen(
     connection: BudsConnection,
     config: Arc<Mutex<Config>>,
     ch: Arc<Mutex<ConnHandler>>,

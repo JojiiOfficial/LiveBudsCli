@@ -1,12 +1,14 @@
-use super::bluetooth;
-use super::buds_config::{BudsConfig, Config};
-use super::buds_info::BudsInfo;
-use super::client_handler;
+use super::super::buds_config::{BudsConfig, Config};
+use super::super::buds_info::BudsInfo;
+use super::bt_buds_listener;
+use super::bt_connection_listener::BudsConnection;
 
 use async_std::sync::Arc;
 use async_std::sync::Mutex;
+use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::sync::mpsc::Receiver;
 
 /// The connection handler keeps track of
@@ -133,7 +135,7 @@ pub async fn run(
         }
 
         // Connect to the RFCOMM interface of the buds
-        let connection = bluetooth::connect_rfcomm(i.clone());
+        let connection = connect_rfcomm(i.clone());
         if let Err(err) = connection {
             eprintln!("Error connecting to rfcomm: {:?}", err);
             continue;
@@ -153,10 +155,24 @@ pub async fn run(
         }
 
         // Create a new buds connection task
-        async_std::task::spawn(client_handler::handle_client(
+        async_std::task::spawn(bt_buds_listener::start_listen(
             connection.unwrap(),
             Arc::clone(&config),
             Arc::clone(&arc_ch),
         ));
     }
+}
+
+/// Connect to buds live via rfcomm proto
+pub fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, String> {
+    let mut socket = BtSocket::new(BtProtocol::RFCOMM).map_err(|e| e.to_string())?;
+    let address = BtAddr::from_str(addr.as_ref()).unwrap();
+    socket.connect(&address).map_err(|e| e.to_string())?;
+    let fd = socket.get_fd();
+
+    Ok(BudsConnection {
+        addr: addr.as_ref().to_owned(),
+        socket,
+        fd,
+    })
 }

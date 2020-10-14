@@ -1,5 +1,5 @@
+use super::bluetooth::rfcomm_connector::ConnectionData;
 use super::buds_config::Config;
-use super::connection_handler::ConnectionData;
 use super::unix_request_handler;
 
 use async_std::{os::unix::net::UnixListener, prelude::*, sync::Mutex};
