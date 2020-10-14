@@ -5,7 +5,7 @@ mod client_handler;
 mod connection_handler;
 pub mod unix_request_handler;
 mod unix_socket;
-mod utils;
+pub mod utils;
 
 use async_std::sync::Mutex;
 use bud_connection::ConnectionEventInfo;

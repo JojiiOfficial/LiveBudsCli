@@ -22,10 +22,7 @@ impl SocketClient {
     }
 
     /// Do a request to the daemon
-    pub fn do_request(
-        &mut self,
-        request: Request,
-    ) -> Result<Response<BudsInfoInner>, Box<dyn Error>> {
+    pub fn do_request(&mut self, request: Request) -> Result<String, Box<dyn Error>> {
         let mut stream = &self.socket;
 
         // send request
@@ -35,9 +32,19 @@ impl SocketClient {
         // wait for response
         let mut response = String::new();
         stream.read_to_string(&mut response)?;
-
-        Ok(Response::from_string(response.as_str())?)
+        Ok(response)
     }
+}
+
+pub fn to_response<'de, T>(response_str: &'de str) -> Response<T>
+where
+    T: serde::ser::Serialize + serde::de::Deserialize<'de>,
+{
+    Response::from_string(&response_str).unwrap()
+}
+
+pub fn to_buds_info(response: String) -> Response<BudsInfoInner> {
+    to_response::<BudsInfoInner>(response.as_str())
 }
 
 pub fn new_status_request(device: Option<String>) -> Request {

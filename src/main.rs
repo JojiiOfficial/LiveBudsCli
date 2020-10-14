@@ -19,6 +19,7 @@ const DAEMON_PATH: &str = "/tmp/livebuds.sock";
 fn build_cli() -> App<'static> {
     App::new("livebuds")
         .setting(AppSettings::TrailingVarArg)
+        .setting(AppSettings::ColoredHelp)
         .version(crate_version!())
         .author("Jojii S")
         .about("Control your Galaxy Buds live from cli")
@@ -58,6 +59,22 @@ fn build_cli() -> App<'static> {
                     .value_hint(ValueHint::Unknown)
                     .possible_values(&["json", "normal"]),
             ),
+        )
+        .subcommand(
+            App::new("set")
+                .arg(
+                    Arg::new("key")
+                        .required(true)
+                        .takes_value(true)
+                        .possible_values(&[
+                            "equalizer",
+                            "eq",
+                            "anc",
+                            "noise-reduction",
+                            "touchpadlock",
+                        ]),
+                )
+                .arg(Arg::new("value").required(true).takes_value(true)),
         )
 }
 
@@ -111,10 +128,13 @@ async fn main() {
         }
     };
 
-    match clap.subcommand_name() {
-        Some("status") => cmd::info::show(&mut socket_client, clap),
-        _ => return,
-    };
+    if let Some(subcommand) = clap.subcommand_matches("status") {
+        cmd::info::show(&mut socket_client, subcommand);
+    }
+
+    if let Some(subcommand) = clap.subcommand_matches("set") {
+        cmd::value::set(&mut socket_client, subcommand);
+    }
 }
 
 fn print_completions<G: Generator>(app: &mut App) {
