@@ -2,18 +2,20 @@ mod daemon;
 
 use clap::{clap_app, crate_version};
 
+use std::env;
 use std::path::Path;
-use std::process::exit;
+use std::process::{exit, Command, Stdio};
 
 const DAEMON_PATH: &str = "/tmp/livebuds.sock";
 
 #[async_std::main]
 async fn main() {
     let clap = clap_app!(livebuds => (version:crate_version!())
-                         (author:"Jojii S")
-                         (about:"Control your Galaxy Buds live from cli")
-                         (@arg daemon: -d --daemon "Starts the daemon")
-                         (@arg quiet: -q --quiet "Don't print extra output"))
+    (author:"Jojii S")
+    (about:"Control your Galaxy Buds live from cli")
+    (@arg daemon: -d --daemon "Starts the daemon")
+    (@arg quiet: -q --quiet "Don't print extra output")
+    )
     .get_matches();
 
     // run only the daemon if desired
@@ -34,11 +36,23 @@ async fn main() {
 
     // We want to start a daemon here if not running
     if check_daemon_running(DAEMON_PATH.to_owned()).is_ok() {
-        println!("would start daemon here");
-        // TODO RUN DAEMON HERE
+        if !start_background_daemon() {
+            exit(1);
+        } else if !clap.is_present("quiet") {
+            println!("started daemon successfully")
+        }
     }
+}
 
-    unimplemented!();
+/// Start the daemon detached from the current cli
+fn start_background_daemon() -> bool {
+    let curr_exe = env::current_exe().expect("Couldn't get current executable!");
+    let mut cmd = Command::new("nohup");
+    let cmd = cmd.arg(curr_exe).arg("-d");
+    cmd.stdout(Stdio::null());
+    cmd.stderr(Stdio::null());
+    let status = cmd.spawn();
+    status.is_ok()
 }
 
 // Returns an error with a huam friendly message if a daemon is already running

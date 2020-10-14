@@ -2,7 +2,7 @@ use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
 use bluetooth_serial_port_async::BtSocket;
 use galaxy_buds_live_rs::message;
-use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType, Placement};
+use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement};
 
 use serde_derive::{Deserialize, Serialize};
 

@@ -64,7 +64,7 @@ where
 pub async fn handle_client(
     stream: UnixStream,
     cd: Arc<Mutex<ConnectionData>>,
-    config: Arc<Mutex<Config>>,
+    _config: Arc<Mutex<Config>>,
 ) {
     let mut read_stream = BufReader::new(&stream);
     let mut write_stream = BufWriter::new(&stream);
