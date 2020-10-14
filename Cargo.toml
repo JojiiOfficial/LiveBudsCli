@@ -1,6 +1,6 @@
 [package]
 name = "earbuds"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["jojii <jojii@gmx.net>"]
 edition = "2018"
 
@@ -8,19 +8,17 @@ edition = "2018"
 
 [dependencies]
 galaxy_buds_live_rs = "0.1.5"
-daemonize = "0.4.1"
 clap = "3.0.0-beta.2"
 async-std = { version = "1.6.5", features = ["attributes"] }
-futures = "0.3.6"
-blurz = "0.4.0"
 bluetooth-serial-port-async = "0.6.0"
-ofiles = { path = "/home/jojii/tmp/ofiles"}
+blurz = "0.4.0"
+ofiles = { git = "https://github.com/JojiiOfficial/ofiles"}
 serde = "1.0.116"
 serde_derive = "1.0.116"
 serde_json = "1.0.59"
 notify-rust = "4.0.0"
-dirs = "3.0.1"
 toml = "0.5.7"
 mpris = "2.0.0-rc2"
 clap_generate = "3.0.0-beta.2"
 nix = "0.19.0"
+dirs = "3.0.1"
