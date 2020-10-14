@@ -4,7 +4,7 @@ use std::os::unix::net::UnixStream;
 use std::path::Path;
 
 use crate::daemon::buds_info::BudsInfoInner;
-use crate::daemon::unix_request_handler::{Request, Response};
+use crate::daemon::unix_socket::{Request, Response};
 
 pub struct SocketClient {
     #[allow(dead_code)]

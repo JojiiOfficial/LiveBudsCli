@@ -1,8 +1,7 @@
 mod bluetooth;
 mod buds_config;
 pub mod buds_info;
-pub mod unix_request_handler;
-mod unix_socket;
+pub mod unix_socket;
 pub mod utils;
 
 use async_std::sync::Mutex;
@@ -35,7 +34,7 @@ pub async fn run_daemon(p: String) {
     ));
 
     // Run unix socket
-    async_std::task::spawn(unix_socket::run(
+    async_std::task::spawn(unix_socket::socket::run(
         p,
         Arc::clone(&connection_data),
         Arc::clone(&config),

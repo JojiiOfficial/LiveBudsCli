@@ -1,6 +1,6 @@
-use super::bluetooth::rfcomm_connector::ConnectionData;
-use super::buds_config::Config;
-use super::unix_request_handler;
+use super::super::bluetooth::rfcomm_connector::ConnectionData;
+use super::super::buds_config::Config;
+use super::connection_handler;
 
 use async_std::{os::unix::net::UnixListener, prelude::*, sync::Mutex};
 
@@ -14,7 +14,7 @@ pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>, config: A
 
     loop {
         while let Some(stream) = incoming.next().await {
-            async_std::task::spawn(unix_request_handler::handle_client(
+            async_std::task::spawn(connection_handler::handle_client(
                 stream.unwrap(),
                 Arc::clone(&cd),
                 Arc::clone(&config),
