@@ -1,30 +1,8 @@
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
-use bluetooth_serial_port_async::BtSocket;
 use galaxy_buds_live_rs::message;
 use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement};
-
 use serde_derive::{Deserialize, Serialize};
-
-/// An active connection to a pair of buds
-#[derive(Debug)]
-pub struct BudsConnection {
-    pub addr: String,
-    pub socket: BtSocket,
-    pub fd: i32,
-}
-
-#[derive(Debug)]
-pub struct ConnectionEventInfo {
-    pub addr: String,
-    pub connected: bool,
-}
-
-impl ConnectionEventInfo {
-    pub fn new(addr: String, connected: bool) -> Self {
-        ConnectionEventInfo { addr, connected }
-    }
-}
 
 /// Informations about a connected pair
 /// of Galaxy Buds live
@@ -83,6 +61,7 @@ impl BudsInfo {
     }
 }
 
+// Serialize/Deserialize Placement
 mod placement_dser {
     use galaxy_buds_live_rs::message::bud_property::{BudProperty, Placement};
     use serde::{self, Deserialize, Deserializer, Serializer};
@@ -98,11 +77,11 @@ mod placement_dser {
     where
         D: Deserializer<'de>,
     {
-        let s: u8 = u8::deserialize(deserializer)?;
-        return Ok(Placement::decode(s));
+        return Ok(Placement::decode(u8::deserialize(deserializer)?));
     }
 }
 
+// Serialize/Deserialize EqualizerType
 mod equalizer_dser {
     use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType};
     use serde::{self, Deserialize, Deserializer, Serializer};
@@ -118,7 +97,6 @@ mod equalizer_dser {
     where
         D: Deserializer<'de>,
     {
-        let s: u8 = u8::deserialize(deserializer)?;
-        return Ok(EqualizerType::decode(s));
+        return Ok(EqualizerType::decode(u8::deserialize(deserializer)?));
     }
 }

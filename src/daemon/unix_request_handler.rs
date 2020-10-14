@@ -1,5 +1,5 @@
-use super::bud_connection::{BudsInfo, BudsInfoInner};
 use super::buds_config::Config;
+use super::buds_info::{BudsInfo, BudsInfoInner};
 use super::connection_handler::ConnectionData;
 use super::utils::str_to_bool;
 

@@ -1,7 +1,5 @@
-use super::socket_client::{self, SocketClient};
-use super::utils;
-use crate::daemon::bud_connection::BudsInfoInner;
-use crate::daemon::utils::{is_str_bool, str_to_bool};
+use super::socket_client::SocketClient;
+use crate::daemon::utils::is_str_bool;
 
 use clap::ArgMatches;
 use galaxy_buds_live_rs::message::bud_property::EqualizerType;

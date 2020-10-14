@@ -1,6 +1,6 @@
 use super::socket_client::{self, SocketClient};
 use super::utils;
-use crate::daemon::bud_connection::BudsInfoInner;
+use crate::daemon::buds_info::BudsInfoInner;
 
 use clap::ArgMatches;
 

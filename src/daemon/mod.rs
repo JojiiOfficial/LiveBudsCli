@@ -1,6 +1,6 @@
 mod bluetooth;
-pub mod bud_connection;
 mod buds_config;
+pub mod buds_info;
 mod client_handler;
 mod connection_handler;
 pub mod unix_request_handler;
@@ -8,7 +8,6 @@ mod unix_socket;
 pub mod utils;
 
 use async_std::sync::Mutex;
-use bud_connection::ConnectionEventInfo;
 use connection_handler::ConnectionData;
 
 use std::sync::{mpsc, Arc};
@@ -18,7 +17,7 @@ pub async fn run_daemon(p: String) {
     daemonize_self(); // Put into background
 
     // Exchange connection events between bluetooth and connection handler
-    let (conn_tx, conn_rx) = mpsc::channel::<ConnectionEventInfo>();
+    let (conn_tx, conn_rx) = mpsc::channel::<String>();
 
     // Exchanging Buds data between unix socket and the buds listener
     let connection_data = Arc::new(Mutex::new(ConnectionData::new()));

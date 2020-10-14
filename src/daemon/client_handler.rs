@@ -1,6 +1,7 @@
-use super::bud_connection::{BudsConnection, BudsInfo};
+use super::bluetooth::BudsConnection;
 use super::buds_config::{BudsConfig, Config};
-use super::connection_handler::ConnectionData;
+use super::buds_info::BudsInfo;
+use super::connection_handler::ConnHandler;
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
@@ -16,8 +17,8 @@ use std::sync::Arc;
 /// Read buds data
 pub async fn handle_client(
     connection: BudsConnection,
-    cd: Arc<Mutex<ConnectionData>>,
     config: Arc<Mutex<Config>>,
+    ch: Arc<Mutex<ConnHandler>>,
 ) {
     let mut stream = connection.socket.get_stream();
     let mut buffer = [0; 2048];
@@ -25,13 +26,21 @@ pub async fn handle_client(
     loop {
         let bytes_read = match stream.read(&mut buffer[..]).await {
             Ok(v) => v,
-            Err(_) => return,
+            Err(_) => {
+                let mut c = ch.lock().await;
+                c.remove_device(connection.addr.as_str()).await;
+
+                println!("exited handle_client");
+                return;
+            }
         };
 
         // The received message from the buds
         let message = Message::new(&buffer[0..bytes_read]);
 
-        let mut lock = cd.lock().await;
+        let connection_handler = ch.lock().await;
+        let mut lock = connection_handler.connection_data.lock().await;
+
         let info = lock
             .data
             .entry(connection.addr.clone())

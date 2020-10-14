@@ -1,9 +1,8 @@
 /*
- * Handles incoming bluetooth connections and connects
- * to the galaxy buds if available
+ * Handles incoming bluetooth connections and
+ * forwards connection events to the connector
  */
 
-use super::bud_connection::{BudsConnection, ConnectionEventInfo};
 use super::utils;
 
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
@@ -16,21 +15,24 @@ use blurz::{
 use std::str::FromStr;
 use std::sync::mpsc::Sender;
 
+/// An active connection to a pair of buds
+#[derive(Debug)]
+pub struct BudsConnection {
+    pub addr: String,
+    pub socket: BtSocket,
+    pub fd: i32,
+}
+
 /// Listens for new Bluethooth connections
-pub async fn run(sender: Sender<ConnectionEventInfo>) {
+pub async fn run(sender: Sender<String>) {
     let session = &BluetoothSession::create_session(None).unwrap();
     let adapter: BluetoothAdapter = BluetoothAdapter::init(session).unwrap();
 
     // We need this behaivor twice
-    let check_device = |device: String, connected: bool| {
+    let check_device = |device: String| {
         let device = BluetoothDevice::new(&session, device);
         if utils::is_bt_device_buds_live(&device) {
-            sender
-                .send(ConnectionEventInfo::new(
-                    device.get_address().unwrap(),
-                    connected,
-                ))
-                .unwrap();
+            sender.send(device.get_address().unwrap()).unwrap();
         }
     };
 
@@ -44,7 +46,7 @@ pub async fn run(sender: Sender<ConnectionEventInfo>) {
             }
 
             println!("check device {:?}", device);
-            check_device(device.get_id(), true);
+            check_device(device.get_id());
         }
     }
 
@@ -60,7 +62,11 @@ pub async fn run(sender: Sender<ConnectionEventInfo>) {
                 connected,
             } = event.unwrap()
             {
-                check_device(object_path, connected);
+                if !connected {
+                    continue;
+                }
+
+                check_device(object_path);
             }
         }
     }

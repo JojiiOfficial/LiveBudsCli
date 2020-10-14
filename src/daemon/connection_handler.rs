@@ -1,6 +1,6 @@
 use super::bluetooth;
-use super::bud_connection::{BudsInfo, ConnectionEventInfo};
 use super::buds_config::{BudsConfig, Config};
+use super::buds_info::BudsInfo;
 use super::client_handler;
 
 use async_std::sync::Arc;
@@ -13,7 +13,7 @@ use std::sync::mpsc::Receiver;
 /// all connected devices and its status
 pub struct ConnHandler {
     connected_devices: Vec<String>,
-    connection_data: Arc<Mutex<ConnectionData>>,
+    pub connection_data: Arc<Mutex<ConnectionData>>,
 }
 
 impl ConnHandler {
@@ -23,11 +23,6 @@ impl ConnHandler {
             connected_devices: Vec::new(),
             connection_data: cd,
         }
-    }
-
-    /// Get an Arc::Clone of the ConnectionData
-    pub fn get_connection_data(&self) -> Arc<Mutex<ConnectionData>> {
-        Arc::clone(&self.connection_data)
     }
 
     /// Check whether a given device is connected or not
@@ -42,12 +37,13 @@ impl ConnHandler {
 
     /// Remove a device from the ConnHandler
     pub async fn remove_device(&mut self, dev: &str) {
+        self.connection_data.lock().await.data.remove(dev);
+
         let pos = self.get_item_pos(dev);
         if pos.is_none() {
             return;
         }
 
-        self.connection_data.lock().await.data.remove(dev);
         self.connected_devices.remove(pos.unwrap());
     }
 
@@ -121,40 +117,37 @@ impl ConnectionData {
 
 /// run the connection handler
 pub async fn run(
-    rec: Receiver<ConnectionEventInfo>,
+    rec: Receiver<String>,
     cd: Arc<Mutex<ConnectionData>>,
     config: Arc<Mutex<Config>>,
 ) {
-    let mut connection_handler = ConnHandler::new(cd);
+    let connection_handler = ConnHandler::new(cd);
+    let arc_ch = Arc::new(Mutex::new(connection_handler));
 
     for i in rec {
-        if !i.connected {
-            // remove connection
-            connection_handler.remove_device(i.addr.as_str()).await;
-            continue;
-        }
+        let mut connection_handler = arc_ch.lock().await;
 
         // Ignore already connected devices
-        if connection_handler.has_device(i.addr.as_str()) {
+        if connection_handler.has_device(i.as_str()) {
             continue;
         }
 
         // Connect to the RFCOMM interface of the buds
-        let connection = bluetooth::connect_rfcomm(&i.addr);
+        let connection = bluetooth::connect_rfcomm(i.clone());
         if let Err(err) = connection {
-            eprintln!("Error connecting to rfcomm:{:?}", err);
+            eprintln!("Error connecting to rfcomm: {:?}", err);
             continue;
         }
 
         println!("Connected successfully to Buds live!");
 
         // Add device to the connection handler
-        connection_handler.add_device(i.addr.to_owned());
+        connection_handler.add_device(i.to_owned());
 
         // Set default config for (apparently) new device
         let mut cfg = config.lock().await;
-        if !cfg.has_device_config(&i.addr) {
-            cfg.set_device_config(BudsConfig::new(i.addr.clone()))
+        if !cfg.has_device_config(&i) {
+            cfg.set_device_config(BudsConfig::new(i.clone()))
                 .await
                 .unwrap();
         }
@@ -162,8 +155,8 @@ pub async fn run(
         // Create a new buds connection task
         async_std::task::spawn(client_handler::handle_client(
             connection.unwrap(),
-            Arc::clone(&connection_handler.get_connection_data()),
             Arc::clone(&config),
+            Arc::clone(&arc_ch),
         ));
     }
 }

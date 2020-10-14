@@ -3,7 +3,7 @@ use std::io::prelude::*;
 use std::os::unix::net::UnixStream;
 use std::path::Path;
 
-use crate::daemon::bud_connection::BudsInfoInner;
+use crate::daemon::buds_info::BudsInfoInner;
 use crate::daemon::unix_request_handler::{Request, Response};
 
 pub struct SocketClient {
