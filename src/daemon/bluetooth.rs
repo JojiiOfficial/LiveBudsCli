@@ -37,13 +37,20 @@ pub async fn run(sender: Sender<ConnectionEventInfo>) {
     // check if a pair of buds is already connected!
     if let Ok(devices) = adapter.get_device_list() {
         for device in devices {
-            check_device(device, true);
+            let device = BluetoothDevice::new(&session, device);
+            let is_connected = device.is_connected();
+            if is_connected.is_err() || !is_connected.unwrap() {
+                continue;
+            }
+
+            println!("check device {:?}", device);
+            check_device(device.get_id(), true);
         }
     }
 
     // Handle all future connection events
     loop {
-        for event in session.incoming(10000).map(BluetoothEvent::from) {
+        for event in session.incoming(1000).map(BluetoothEvent::from) {
             if event.is_none() {
                 continue;
             }

@@ -692,9 +692,9 @@ dependencies = [
 
 [[package]]
 name = "galaxy_buds_live_rs"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a24cb0c28b646693c7b0b009e4671ab8026a336203d63bf110e5556819c7fa8d"
+checksum = "f820e14271f6bf542def1241135b8161035725cf1eea36bee6e4f58d15fe32f7"
 dependencies = [
  "async-std",
  "bluetooth-serial-port-async",
