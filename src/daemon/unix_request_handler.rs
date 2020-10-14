@@ -1,4 +1,4 @@
-use super::bud_connection::BudsInfo;
+use super::bud_connection::{BudsInfo, BudsInfoInner};
 use super::buds_config::Config;
 use super::connection_handler::ConnectionData;
 use super::utils::str_to_bool;
@@ -83,6 +83,16 @@ where
     {
         serde_json::from_str(s)
     }
+
+    /// return true if response represents a success
+    pub fn is_success(&self) -> bool {
+        self.status == "success".to_owned()
+    }
+
+    /// return true if response represents an error
+    pub fn is_error(&self) -> bool {
+        self.status != "success".to_owned()
+    }
 }
 
 /// Handle a unix socket connection
@@ -94,6 +104,8 @@ pub async fn handle_client(
     let mut read_stream = BufReader::new(&stream);
     let mut write_stream = BufWriter::new(&stream);
     let mut buff = String::new();
+
+    buff.clear();
 
     // Read the request
     if read_stream.read_line(&mut buff).await.is_err() {
@@ -108,14 +120,23 @@ pub async fn handle_client(
     };
     println!("{:?}", payload);
 
+    let get_err =
+        |msg: &str| -> Response<BudsInfoInner> { Response::new_error("".to_owned(), msg, None) };
+
     let mut connection_data = cd.lock().await;
+
+    // Respond with error if no device is connected
+    if connection_data.get_device_count() == 0 {
+        respond(&get_err("No connected device found"), &mut write_stream).await;
+        return;
+    }
+
     let device_addr = match connection_data
         .get_device_address(&payload.device.clone().unwrap_or_default().clone())
     {
         Some(addr) => addr,
         None => {
-            // TODO
-            // Device not found!
+            respond(&get_err("Device not found"), &mut write_stream).await;
             return;
         }
     };

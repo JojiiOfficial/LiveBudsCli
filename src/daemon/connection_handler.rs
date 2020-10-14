@@ -109,6 +109,11 @@ impl ConnectionData {
         self.get_device(addr).map(|i| i.inner.address.clone())
     }
 
+    /// Get count of connected devices
+    pub fn get_device_count(&self) -> usize {
+        self.data.len()
+    }
+
     fn get_first_device(&self) -> Option<&BudsInfo> {
         self.data.iter().next().map(|(_, v)| v)
     }

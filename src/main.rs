@@ -43,6 +43,7 @@ fn build_cli() -> App<'static> {
         )
         .arg(
             Arg::new("device")
+                .global(true)
                 .about("Specify the device to use. Not neccessary if only one device is connected")
                 .short('s')
                 .takes_value(true)
