@@ -1,4 +1,4 @@
-use crate::daemon::unix_socket::{Request, Response};
+use crate::daemon::unix_socket::Response;
 use clap::ArgMatches;
 
 pub fn print_as_json(app: &ArgMatches) -> bool {

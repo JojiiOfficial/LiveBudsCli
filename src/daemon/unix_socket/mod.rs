@@ -3,6 +3,7 @@ pub mod socket;
 
 use serde_derive::{Deserialize, Serialize};
 
+/// Unix connection request
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Request {
     pub cmd: String,
@@ -23,6 +24,7 @@ impl Request {
         }
     }
 
+    /// Get bytes to send for a request
     pub fn sendable(&self) -> serde_json::Result<String> {
         let mut s = serde_json::to_string(self)?;
         s.push('\n');
@@ -30,6 +32,7 @@ impl Request {
     }
 }
 
+/// Unix connection response
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Response<T>
 where
@@ -45,6 +48,7 @@ impl<T> Response<T>
 where
     T: serde::ser::Serialize,
 {
+    /// Create new success response
     fn new_success<S: AsRef<str>>(device_addr: S, payload: Option<T>) -> Self {
         Self {
             status: "success".to_owned(),
@@ -54,6 +58,7 @@ where
         }
     }
 
+    /// Create new Error response
     fn new_error<S: AsRef<str>>(device: String, message: S, payload: Option<T>) -> Self {
         Self {
             status: "error".to_owned(),
@@ -73,10 +78,5 @@ where
     /// return true if response represents a success
     pub fn is_success(&self) -> bool {
         self.status == "success".to_owned()
-    }
-
-    /// return true if response represents an error
-    pub fn is_error(&self) -> bool {
-        self.status != "success".to_owned()
     }
 }

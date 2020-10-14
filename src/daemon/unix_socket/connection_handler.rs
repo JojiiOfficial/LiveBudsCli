@@ -14,7 +14,6 @@ use galaxy_buds_live_rs::message::{
     lock_touchpad, set_noise_reduction,
     simple::new_equalizer,
 };
-
 use std::sync::Arc;
 
 /// Handle a unix socket connection
@@ -40,7 +39,6 @@ pub async fn handle_client(
         Ok(p) => p,
         Err(_) => return,
     };
-    println!("{:?}", payload);
 
     let get_err =
         |msg: &str| -> Response<BudsInfoInner> { Response::new_error("".to_owned(), msg, None) };
