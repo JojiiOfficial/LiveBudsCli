@@ -8,8 +8,6 @@ use galaxy_buds_live_rs::message::bud_property::EqualizerType;
 
 /// Set a value
 pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
-    println!("{:?}", app);
-
     let value = app.value_of("value").unwrap();
     let skey = app.value_of("key").unwrap();
     let key = match parse_key(skey) {
@@ -21,7 +19,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
     };
 
     if !is_value_ok(key, value) {
-        println!("invalid '{}' for key '{}'", value, skey);
+        println!("invalid value: '{}' for key: '{}'", value, skey);
         return;
     }
 }
@@ -44,7 +42,7 @@ enum Key {
 
 fn parse_key(key: &str) -> Option<Key> {
     Some(match key.to_string().to_lowercase().as_str() {
-        "anc" | "noise_reduction" | "noise-reduction" | "noise-cancellation" => Key::Anc,
+        "nc" | "anc" | "noise_reduction" | "noise-reduction" | "noise-cancellation" => Key::Anc,
         "eq" | "equalizer" | "equalizer-type" | "equalizertype" => Key::Equalizer,
         "touchpadlock" | "tpl" | "locktouchpad" => Key::Touchpadlock,
         _ => return None,

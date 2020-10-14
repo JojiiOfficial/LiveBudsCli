@@ -23,13 +23,12 @@ fn build_cli() -> App<'static> {
         .version(crate_version!())
         .author("Jojii S")
         .about("Control your Galaxy Buds live from cli")
-        .arg(Arg::new("generator").long("generate").possible_values(&[
-            "bash",
-            "elvish",
-            "fish",
-            "powershell",
-            "zsh",
-        ]))
+        .arg(
+            Arg::new("generator")
+                .long("generate")
+                .about("Generate completion scripts for a given type of shell")
+                .possible_values(&["bash", "elvish", "fish", "powershell", "zsh"]),
+        )
         .arg(
             Arg::new("daemon")
                 .about("Starts the daemon")
@@ -45,23 +44,27 @@ fn build_cli() -> App<'static> {
         .arg(
             Arg::new("device")
                 .global(true)
-                .about("Specify the device to use. Not neccessary if only one device is connected")
+                .about("Specify the device to use")
                 .short('s')
                 .takes_value(true)
                 .value_hint(ValueHint::Unknown)
                 .long("device"),
         )
         .subcommand(
-            App::new("status").alias("info").arg(
-                Arg::new("output")
-                    .short('o')
-                    .long("output")
-                    .value_hint(ValueHint::Unknown)
-                    .possible_values(&["json", "normal"]),
-            ),
+            App::new("status")
+                .alias("info")
+                .about("Display informations for a given device")
+                .arg(
+                    Arg::new("output")
+                        .short('o')
+                        .long("output")
+                        .value_hint(ValueHint::Unknown)
+                        .possible_values(&["json", "normal"]),
+                ),
         )
         .subcommand(
             App::new("set")
+                .about("Turn on/off features and control the equalizer setting")
                 .arg(
                     Arg::new("key")
                         .required(true)
