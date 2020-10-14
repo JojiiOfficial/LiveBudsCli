@@ -105,7 +105,13 @@ pub async fn handle_client(
             "get_status" => {
                 new_payload = Response::new_success(
                     device_addr.clone(),
-                    Some(connection_data.get_device(&device_addr).unwrap()),
+                    Some(
+                        connection_data
+                            .get_device(&device_addr)
+                            .unwrap()
+                            .inner
+                            .clone(),
+                    ),
                 );
             }
             "set_value" => {
@@ -114,7 +120,7 @@ pub async fn handle_client(
             }
             "set_config" => {
                 let device = connection_data.get_device(&device_addr).unwrap();
-                new_payload = Response::new_success(device.address.clone(), None);
+                new_payload = Response::new_success(device.inner.address.clone(), None);
             }
             _ => continue,
         };
@@ -149,7 +155,7 @@ where
 
     // Return success or error based on the success of the set command
     if res.is_ok() {
-        Response::new_success(device_data.address.clone(), None)
+        Response::new_success(device_data.inner.address.clone(), None)
     } else {
         get_err(res.err().unwrap().as_str())
     }
@@ -164,7 +170,7 @@ async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> 
             let msg = set_noise_reduction::new(value);
             let res = device_data.send(msg).await;
             if res.is_ok() {
-                device_data.noise_reduction = value;
+                device_data.inner.noise_reduction = value;
             }
             res
         }
@@ -175,7 +181,7 @@ async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> 
             let msg = lock_touchpad::new(value);
             let res = device_data.send(msg).await;
             if res.is_ok() {
-                device_data.touchpads_blocked = value;
+                device_data.inner.touchpads_blocked = value;
             }
             res
         }
@@ -186,7 +192,7 @@ async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> 
                 let eq_type = EqualizerType::decode(val);
                 let res = device_data.send(new_equalizer(eq_type)).await;
                 if res.is_ok() {
-                    device_data.equalizer_type = eq_type;
+                    device_data.inner.equalizer_type = eq_type;
                 }
                 res
             }

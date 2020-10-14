@@ -70,9 +70,9 @@ pub async fn handle_client(
 /// Handle automatically pausing/playing music on earbuds wearing statu changes
 fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig) {
     let is_wearing = is_wearing_state(update.placement_left, update.placement_right);
-    let was_wearing = is_wearing_state(info.placement_left, info.placement_right);
+    let was_wearing = is_wearing_state(info.inner.placement_left, info.inner.placement_right);
 
-    let was_some_wearing = is_wearing_state(info.placement_left, info.placement_right);
+    let was_some_wearing = is_wearing_state(info.inner.placement_left, info.inner.placement_right);
     let is_not_wearing = is_absolute_not_wearing(update.placement_left, update.placement_right);
 
     // Resume music if old wearing state
@@ -117,17 +117,17 @@ fn handle_low_battery(update: &StatusUpdate, info: &mut BudsInfo) {
     let r_batt = update.battery_right;
 
     // Reset battery notify lock
-    if l_batt > 30 && r_batt > 30 && info.did_battery_notify {
-        info.did_battery_notify = false;
+    if l_batt > 30 && r_batt > 30 && info.inner.did_battery_notify {
+        info.inner.did_battery_notify = false;
         return;
     }
 
-    if info.did_battery_notify {
+    if info.inner.did_battery_notify {
         return;
     }
 
     if l_batt < 20 || r_batt < 20 {
-        info.did_battery_notify = true;
+        info.inner.did_battery_notify = true;
 
         Notification::new()
             .summary("Buds Live battery low")
@@ -146,21 +146,21 @@ fn handle_low_battery(update: &StatusUpdate, info: &mut BudsInfo) {
 
 // Update a BudsInfo to the values of an extended_status_update
 fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
-    info.batt_left = update.battery_left;
-    info.batt_right = update.battery_right;
-    info.batt_case = update.battery_case;
-    info.placement_left = update.placement_left;
-    info.placement_right = update.placement_right;
-    info.equalizer_type = update.equalizer_type;
-    info.touchpads_blocked = update.touchpads_blocked;
-    info.noise_reduction = update.noise_reduction;
+    info.inner.batt_left = update.battery_left;
+    info.inner.batt_right = update.battery_right;
+    info.inner.batt_case = update.battery_case;
+    info.inner.placement_left = update.placement_left;
+    info.inner.placement_right = update.placement_right;
+    info.inner.equalizer_type = update.equalizer_type;
+    info.inner.touchpads_blocked = update.touchpads_blocked;
+    info.inner.noise_reduction = update.noise_reduction;
 }
 
 // Update a BudsInfo to the values of an extended_status_update
 fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
-    info.batt_left = update.battery_left;
-    info.batt_right = update.battery_right;
-    info.batt_case = update.battery_case;
-    info.placement_left = update.placement_left;
-    info.placement_right = update.placement_right;
+    info.inner.batt_left = update.battery_left;
+    info.inner.batt_right = update.battery_right;
+    info.inner.batt_case = update.battery_case;
+    info.inner.placement_left = update.placement_left;
+    info.inner.placement_right = update.placement_right;
 }

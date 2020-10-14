@@ -82,7 +82,7 @@ impl ConnectionData {
         }
 
         for v in self.data.values() {
-            if v.address == *addr {
+            if v.inner.address == *addr {
                 return Some(v);
             }
         }
@@ -93,7 +93,7 @@ impl ConnectionData {
     /// Get device mutable
     pub fn get_device_mut(&mut self, addr: &str) -> Option<&mut BudsInfo> {
         for (_, v) in self.data.iter_mut() {
-            if v.address == *addr {
+            if v.inner.address == *addr {
                 return Some(v);
             }
         }
@@ -103,10 +103,10 @@ impl ConnectionData {
     // Get the full address of a device
     pub fn get_device_address(&self, addr: &str) -> Option<String> {
         if addr.is_empty() {
-            return self.get_first_device().map(|i| i.address.clone());
+            return self.get_first_device().map(|i| i.inner.address.clone());
         }
 
-        self.get_device(addr).map(|i| i.address.clone())
+        self.get_device(addr).map(|i| i.inner.address.clone())
     }
 
     fn get_first_device(&self) -> Option<&BudsInfo> {
