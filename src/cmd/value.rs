@@ -106,9 +106,9 @@ impl Key {
 
     fn parse(key: &str) -> Option<Key> {
         Some(match key.to_string().to_lowercase().as_str() {
-            "nc" | "anc" | "noise_reduction" | "noise-reduction" | "noise-cancellation" => Key::Anc,
+            "nc" | "anc" | "noise_reduction" | "noise-reduction" => Key::Anc,
             "eq" | "equalizer" | "equalizer-type" | "equalizertype" => Key::Equalizer,
-            "touchpadlock" | "tpl" | "locktouchpad" => Key::Touchpadlock,
+            "touchpadlock" | "tpl" | "locktouchpad" | "touchpad" => Key::Touchpadlock,
             _ => return None,
         })
     }

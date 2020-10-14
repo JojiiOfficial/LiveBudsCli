@@ -81,12 +81,17 @@ fn build_cli() -> App<'static> {
                         .required(true)
                         .takes_value(true)
                         .possible_values(&[
-                            "equalizer",
                             "eq",
+                            "equalizer",
+                            "equalizer-type",
+                            "equalizertype",
+                            "nc",
                             "anc",
                             "noise-reduction",
-                            "nc",
+                            "noisereduction",
                             "touchpadlock",
+                            "tpl",
+                            "touchpad",
                         ]),
                 )
                 .arg(Arg::new("value").required(true).takes_value(true)),
