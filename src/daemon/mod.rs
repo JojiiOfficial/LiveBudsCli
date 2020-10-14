@@ -1,9 +1,9 @@
 mod bluetooth;
-mod bud_connection;
+pub mod bud_connection;
 mod buds_config;
 mod client_handler;
 mod connection_handler;
-mod unix_request_handler;
+pub mod unix_request_handler;
 mod unix_socket;
 mod utils;
 

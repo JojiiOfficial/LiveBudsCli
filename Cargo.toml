@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 galaxy_buds_live_rs = "0.1.5"
 daemonize = "0.4.1"
-clap = "2.33.3"
+clap = "3.0.0-beta.2"
 async-std = { version = "1.6.5", features = ["attributes"] }
 futures = "0.3.6"
 blurz = "0.4.0"
@@ -22,3 +22,4 @@ notify-rust = "4.0.0"
 dirs = "3.0.1"
 toml = "0.5.7"
 mpris = "2.0.0-rc2"
+clap_generate = "3.0.0-beta.2"

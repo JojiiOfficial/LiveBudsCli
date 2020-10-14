@@ -18,7 +18,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Request {
+pub struct Request {
     pub cmd: String,
     pub device: Option<String>,
     pub opt_param1: Option<String>,
@@ -26,8 +26,26 @@ struct Request {
     pub opt_param3: Option<String>,
 }
 
+impl Request {
+    pub fn new(cmd: String, device: Option<String>) -> Request {
+        Request {
+            cmd,
+            device,
+            opt_param1: None,
+            opt_param2: None,
+            opt_param3: None,
+        }
+    }
+
+    pub fn sendable(&self) -> serde_json::Result<String> {
+        let mut s = serde_json::to_string(self)?;
+        s.push('\n');
+        Ok(s)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-struct Response<T>
+pub struct Response<T>
 where
     T: serde::ser::Serialize,
 {
@@ -58,6 +76,13 @@ where
             status_message: Some(message.as_ref().to_owned()),
         }
     }
+
+    pub fn from_string<'de>(s: &'de str) -> serde_json::Result<Response<T>>
+    where
+        T: serde::ser::Serialize + serde::de::Deserialize<'de>,
+    {
+        serde_json::from_str(s)
+    }
 }
 
 /// Handle a unix socket connection
@@ -70,65 +95,61 @@ pub async fn handle_client(
     let mut write_stream = BufWriter::new(&stream);
     let mut buff = String::new();
 
-    loop {
-        // might be still dirty
-        buff.clear();
+    // Read the request
+    if read_stream.read_line(&mut buff).await.is_err() {
+        return;
+    }
 
-        // Read the request
-        if read_stream.read_line(&mut buff).await.is_err() {
+    // Parse the request
+    let payload = serde_json::from_str::<Request>(buff.as_str());
+    let payload = match payload {
+        Ok(p) => p,
+        Err(_) => return,
+    };
+    println!("{:?}", payload);
+
+    let mut connection_data = cd.lock().await;
+    let device_addr = match connection_data
+        .get_device_address(&payload.device.clone().unwrap_or_default().clone())
+    {
+        Some(addr) => addr,
+        None => {
+            // TODO
+            // Device not found!
             return;
         }
+    };
 
-        // Parse the request
-        let payload = serde_json::from_str::<Request>(buff.as_str());
-        let payload = match payload {
-            Ok(p) => p,
-            Err(_) => return,
-        };
+    let new_payload;
 
-        let mut connection_data = cd.lock().await;
-        let device_addr = match connection_data
-            .get_device_address(&payload.device.clone().unwrap_or_default().clone())
-        {
-            Some(addr) => addr,
-            None => {
-                // TODO
-                // Device not found!
-                continue;
-            }
-        };
-
-        let new_payload;
-
-        // Run desired action
-        match payload.cmd.as_str() {
-            "get_status" => {
-                new_payload = Response::new_success(
-                    device_addr.clone(),
-                    Some(
-                        connection_data
-                            .get_device(&device_addr)
-                            .unwrap()
-                            .inner
-                            .clone(),
-                    ),
-                );
-            }
-            "set_value" => {
-                let mut device = connection_data.get_device_mut(&device_addr).unwrap();
-                new_payload = set_buds_value(&payload, device_addr.clone(), &mut device).await
-            }
-            "set_config" => {
-                let device = connection_data.get_device(&device_addr).unwrap();
-                new_payload = Response::new_success(device.inner.address.clone(), None);
-            }
-            _ => continue,
-        };
-
-        // Respond. Return on error
-        if !respond(&new_payload, &mut write_stream).await {
-            return;
+    // Run desired action
+    match payload.cmd.as_str() {
+        "get_status" => {
+            new_payload = Response::new_success(
+                device_addr.clone(),
+                Some(
+                    connection_data
+                        .get_device(&device_addr)
+                        .unwrap()
+                        .inner
+                        .clone(),
+                ),
+            );
         }
+        "set_value" => {
+            let mut device = connection_data.get_device_mut(&device_addr).unwrap();
+            new_payload = set_buds_value(&payload, device_addr.clone(), &mut device).await
+        }
+        "set_config" => {
+            let device = connection_data.get_device(&device_addr).unwrap();
+            new_payload = Response::new_success(device.inner.address.clone(), None);
+        }
+        _ => return,
+    };
+
+    // Respond. Return on error
+    if !respond(&new_payload, &mut write_stream).await {
+        return;
     }
 }
 
