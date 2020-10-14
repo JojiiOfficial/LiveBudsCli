@@ -85,6 +85,7 @@ fn build_cli() -> App<'static> {
                             "eq",
                             "anc",
                             "noise-reduction",
+                            "nc",
                             "touchpadlock",
                         ]),
                 )

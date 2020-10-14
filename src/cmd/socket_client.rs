@@ -43,10 +43,20 @@ where
     Response::from_string(&response_str).unwrap()
 }
 
+// Convert a response to a budsInfoInner response
 pub fn to_buds_info(response: String) -> Response<BudsInfoInner> {
     to_response::<BudsInfoInner>(response.as_str())
 }
 
+// Create new status request
 pub fn new_status_request(device: Option<String>) -> Request {
     Request::new("get_status".to_owned(), device)
+}
+
+// Create new set_value request
+pub fn new_set_value_request(device: Option<String>, key: String, value: String) -> Request {
+    let mut request = Request::new("set_value".to_owned(), device);
+    request.opt_param1 = Some(key);
+    request.opt_param2 = Some(value);
+    request
 }
