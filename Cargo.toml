@@ -3,6 +3,11 @@ name = "earbuds"
 version = "0.1.1"
 authors = ["jojii <jojii@gmx.net>"]
 edition = "2018"
+description = "Control your galaxy buds live via cli"
+repository = "https://github.com/JojiiOfficial/LiveBudsCli"
+license = "GPL-3.0"
+license-file = "LICENSE"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
