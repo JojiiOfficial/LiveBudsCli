@@ -39,6 +39,7 @@ pub struct BudsInfo {
     pub equalizer_type: EqualizerType,
     pub touchpads_blocked: bool,
     pub noise_reduction: bool,
+    pub did_battery_notify: bool,
 }
 
 impl BudsInfo {
@@ -54,6 +55,7 @@ impl BudsInfo {
             equalizer_type: EqualizerType::Undetected,
             touchpads_blocked: false,
             noise_reduction: false,
+            did_battery_notify: false,
         }
     }
 

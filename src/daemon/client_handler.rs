@@ -9,6 +9,7 @@ use galaxy_buds_live_rs::message::{
     status_updated::StatusUpdate, Message,
 };
 use mpris::PlayerFinder;
+use notify_rust::Notification;
 
 use std::sync::Arc;
 
@@ -20,7 +21,6 @@ pub async fn handle_client(
 ) {
     let mut stream = connection.socket.get_stream();
     let mut buffer = [0; 2048];
-    let has_finder = PlayerFinder::new().is_ok();
 
     loop {
         let bytes_read = match stream.read(&mut buffer[..]).await {
@@ -40,15 +40,18 @@ pub async fn handle_client(
         if message.get_id() == ids::STATUS_UPDATED {
             let update = message.into();
 
-            // Handle auto resume music
+            // Handle auto resume music and battery notifications
             {
-                if has_finder {
-                    let mut cfg = config.lock().await;
-                    cfg.load().await.unwrap();
-                    if let Some(config) = cfg.get_device_config(&connection.addr) {
-                        if config.auto_resume_music || config.auto_pause_music {
-                            handle_auto_music(&update, info, &config);
-                        }
+                let mut cfg = config.lock().await;
+                cfg.load().await.unwrap();
+
+                if let Some(config) = cfg.get_device_config(&connection.addr) {
+                    if config.auto_resume_music || config.auto_pause_music {
+                        handle_auto_music(&update, info, &config);
+                    }
+
+                    if config.low_battery_notification {
+                        handle_low_battery(&update, info);
                     }
                 }
             }
@@ -69,7 +72,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
     let is_wearing = is_wearing_state(update.placement_left, update.placement_right);
     let was_wearing = is_wearing_state(info.placement_left, info.placement_right);
 
-    let was_some_wearing = is_some_wearing_state(info.placement_left, info.placement_right);
+    let was_some_wearing = is_wearing_state(info.placement_left, info.placement_right);
     let is_not_wearing = is_absolute_not_wearing(update.placement_left, update.placement_right);
 
     // Resume music if old wearing state
@@ -105,12 +108,40 @@ fn is_wearing_state(left: Placement, right: Placement) -> bool {
     left == Placement::Ear && right == Placement::Ear
 }
 
-fn is_some_wearing_state(left: Placement, right: Placement) -> bool {
-    left == Placement::Ear && right == Placement::Ear
-}
-
 fn is_absolute_not_wearing(left: Placement, right: Placement) -> bool {
     left != Placement::Ear && right != Placement::Ear
+}
+
+fn handle_low_battery(update: &StatusUpdate, info: &mut BudsInfo) {
+    let l_batt = update.battery_left;
+    let r_batt = update.battery_right;
+
+    // Reset battery notify lock
+    if l_batt > 30 && r_batt > 30 && info.did_battery_notify {
+        info.did_battery_notify = false;
+        return;
+    }
+
+    if info.did_battery_notify {
+        return;
+    }
+
+    if l_batt < 20 || r_batt < 20 {
+        info.did_battery_notify = true;
+
+        Notification::new()
+            .summary("Buds Live battery low")
+            .body(
+                format!(
+                    "The battery of your Galaxy buds live is pretty low: (L: {}%, R: {}%)",
+                    l_batt, r_batt
+                )
+                .as_str(),
+            )
+            .icon("battery")
+            .show()
+            .unwrap();
+    }
 }
 
 // Update a BudsInfo to the values of an extended_status_update
