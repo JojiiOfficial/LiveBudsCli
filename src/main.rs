@@ -20,6 +20,7 @@ fn build_cli() -> App<'static> {
     App::new("livebuds")
         .setting(AppSettings::TrailingVarArg)
         .setting(AppSettings::ColoredHelp)
+        .setting(AppSettings::ArgRequiredElseHelp)
         .version(crate_version!())
         .author("Jojii S")
         .about("Control your Galaxy Buds live from cli")
@@ -63,6 +64,7 @@ fn build_cli() -> App<'static> {
         )
         .subcommand(
             App::new("status")
+                .setting(AppSettings::ColoredHelp)
                 .alias("info")
                 .about("Display informations for a given device")
                 .arg(
@@ -75,6 +77,8 @@ fn build_cli() -> App<'static> {
         )
         .subcommand(
             App::new("set")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::ColoredHelp)
                 .about("Turn on/off features and control the equalizer setting")
                 .arg(
                     Arg::new("key")
