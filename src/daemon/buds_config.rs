@@ -15,14 +15,14 @@ pub struct BudsConfig {
     pub address: String,
     pub low_battery_notification: bool,
     pub auto_resume_music: bool,
+    pub auto_pause_music: bool,
+    pub smart_touchpad: bool,
 }
 
 impl Config {
     /// Create a new config object
     pub async fn new() -> Result<Self, String> {
         let config_file = Self::get_config_file().await?;
-
-        println!("{:#?}", config_file);
 
         let config;
 
@@ -47,7 +47,21 @@ impl Config {
         let mut f = File::create(&config_file)
             .await
             .map_err(|e| e.to_string())?;
-        f.write_all(&s.as_bytes()).await.map_err(|e| e.to_string());
+        f.write_all(&s.as_bytes())
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    // load a config
+    pub async fn load(&mut self) -> Result<(), String> {
+        let config_file = Self::get_config_file().await?;
+
+        let conf_data = fs::read_to_string(&config_file)
+            .await
+            .map_err(|e| e.to_string())?;
+        *self = toml::from_str(&conf_data).map_err(|e| e.to_string())?;
 
         Ok(())
     }
@@ -96,7 +110,7 @@ impl Config {
         if !conf_dir.exists().await {
             fs::create_dir_all(&conf_dir)
                 .await
-                .map_err(|e| e.to_string());
+                .map_err(|e| e.to_string())?;
         }
 
         Ok(conf_dir.join("config.toml"))
@@ -108,8 +122,10 @@ impl BudsConfig {
     pub fn new(address: String) -> Self {
         Self {
             address,
-            auto_resume_music: true,
             low_battery_notification: true,
+            auto_resume_music: true,
+            auto_pause_music: true,
+            smart_touchpad: true,
         }
     }
 }

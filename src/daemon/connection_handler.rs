@@ -3,9 +3,9 @@ use super::bud_connection::{BudsInfo, ConnectionEventInfo};
 use super::buds_config::{BudsConfig, Config};
 use super::client_handler;
 
+use async_std::sync::Arc;
 use async_std::sync::Mutex;
 
-use async_std::sync::Arc;
 use std::collections::HashMap;
 use std::sync::mpsc::Receiver;
 
