@@ -160,8 +160,13 @@ async fn main() {
     if check_daemon_running(DAEMON_PATH.to_owned()).is_ok() {
         if !start_background_daemon() {
             exit(1);
-        } else if !quiet {
-            println!("Daemon started successfully")
+        } else {
+            if !quiet {
+                println!("Daemon started successfully")
+            }
+
+            // TODO wait for deamon to be ready
+            std::thread::sleep(std::time::Duration::from_millis(250));
         }
     }
 
