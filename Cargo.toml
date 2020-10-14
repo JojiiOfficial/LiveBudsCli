@@ -14,7 +14,7 @@ async-std = { version = "1.6.5", features = ["attributes"] }
 futures = "0.3.6"
 blurz = "0.4.0"
 bluetooth-serial-port-async = "0.6.0"
-ofiles = "0.1.0"
+ofiles = { path = "/home/jojii/tmp/ofiles"}
 serde = "1.0.116"
 serde_derive = "1.0.116"
 serde_json = "1.0.59"
@@ -23,3 +23,4 @@ dirs = "3.0.1"
 toml = "0.5.7"
 mpris = "2.0.0-rc2"
 clap_generate = "3.0.0-beta.2"
+nix = "0.19.0"

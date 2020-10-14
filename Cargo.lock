@@ -482,6 +482,7 @@ dependencies = [
  "futures",
  "galaxy_buds_live_rs",
  "mpris",
+ "nix 0.19.0",
  "notify-rust",
  "ofiles",
  "serde",
@@ -1000,15 +1001,14 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.17.0"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50e4785f2c3b7589a0d0c1dd60285e1188adac4006e8abd6dd578e1567027363"
+checksum = "85db2feff6bf70ebc3a4793191517d5f0331100a2f10f9bf93b5e5214f32b7b7"
 dependencies = [
  "bitflags 1.2.1",
  "cc",
  "cfg-if 0.1.10",
  "libc",
- "void",
 ]
 
 [[package]]
@@ -1098,13 +1098,11 @@ checksum = "37fd5004feb2ce328a52b0b3d01dbf4ffff72583493900ed15f22d4111c51693"
 [[package]]
 name = "ofiles"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34f1e3e9080ed920195a820da05ae915d2ac44ebeb1fa60ade3ab559d552e320"
 dependencies = [
  "error-chain 0.12.4",
  "glob",
  "log",
- "nix 0.17.0",
+ "nix 0.19.0",
 ]
 
 [[package]]
