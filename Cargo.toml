@@ -17,7 +17,7 @@ clap = "3.0.0-beta.2"
 async-std = { version = "1.6.5", features = ["attributes"] }
 bluetooth-serial-port-async = "0.6.0"
 blurz = "0.4.0"
-ofiles = { git = "https://github.com/JojiiOfficial/ofiles"}
+ofiles = "0.1.1"
 serde = "1.0.116"
 serde_derive = "1.0.116"
 serde_json = "1.0.59"
