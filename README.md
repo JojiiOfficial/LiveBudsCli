@@ -14,7 +14,7 @@ A cli tool to control your Galaxy live buds
 # Install
 
 ## AUR
-/soon/
+`yay -S earbuds-git`
 
 ## Compilation
 Run following command:
