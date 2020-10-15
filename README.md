@@ -23,6 +23,8 @@ cargo install earbuds
 ```
 
 # Usage
+To get most of the features listed above, you need to have a daemon instance running (`earbuds -d`). If you run one of the commands 
+listed below, the daemon automatically gets started.
 
 Status informations:
 ```
