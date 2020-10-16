@@ -10,6 +10,8 @@ A cli tool to control your Galaxy live buds
 - [x] Individual device configs
 - [x] Json output for scripts (via `jq`)
 - [x] Bash completion (for every shell)
+- [ ] Change touchpad tap action
+- [ ] Change config options from cli
 
 # Install
 
