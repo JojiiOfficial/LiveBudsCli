@@ -1,4 +1,3 @@
-use dirs::home_dir;
 use serde_derive::{Deserialize, Serialize};
 
 use async_std::fs::{self, File};
@@ -106,7 +105,11 @@ impl Config {
 
     // Create missing folders and return the config file
     pub async fn get_config_file() -> Result<PathBuf, String> {
-        let conf_dir: PathBuf = home_dir().unwrap().join(".config").join("livebuds").into();
+        let conf_dir: PathBuf = get_home_dir()
+            .unwrap()
+            .join(".config")
+            .join("livebuds")
+            .into();
         if !conf_dir.exists().await {
             fs::create_dir_all(&conf_dir)
                 .await
@@ -115,6 +118,13 @@ impl Config {
 
         Ok(conf_dir.join("config.toml"))
     }
+}
+
+pub fn get_home_dir() -> Option<PathBuf> {
+    return std::env::var_os("HOME")
+        .and_then(|home| if home.is_empty() { None } else { Some(home) })
+        .or_else(|| None)
+        .map(PathBuf::from);
 }
 
 impl BudsConfig {
