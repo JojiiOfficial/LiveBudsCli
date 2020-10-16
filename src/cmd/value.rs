@@ -62,6 +62,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
 fn get_value(key: Key, value: &str) -> String {
     match key {
         Key::Anc | Key::Touchpadlock => str_to_bool(value).to_string(),
+        Key::Touchpad => (!str_to_bool(value)).to_string(),
         Key::Equalizer => parse_equalizer(value).encode().to_string(),
     }
 }
@@ -69,8 +70,7 @@ fn get_value(key: Key, value: &str) -> String {
 /// Return true if the value is allowed for the given key
 fn is_value_ok(key: Key, value: &str) -> bool {
     match key {
-        Key::Anc => is_str_bool(value),
-        Key::Touchpadlock => is_str_bool(value),
+        Key::Touchpadlock | Key::Touchpad | Key::Anc => is_str_bool(value),
         Key::Equalizer => parse_equalizer(value) != EqualizerType::Undetected,
     }
 }
@@ -93,6 +93,7 @@ enum Key {
     Anc,
     Equalizer,
     Touchpadlock,
+    Touchpad, // I prefer to type 'set touchpad 1' instead of 'set touchpadlock 0'
 }
 
 impl Key {
@@ -101,6 +102,7 @@ impl Key {
             Key::Anc => "noise_reduction",
             Key::Equalizer => "equalizer",
             Key::Touchpadlock => "lock_touchpad",
+            Key::Touchpad => "lock_touchpad",
         })
     }
 
@@ -108,7 +110,8 @@ impl Key {
         Some(match key.to_string().to_lowercase().as_str() {
             "nc" | "anc" | "noise_reduction" | "noise-reduction" => Key::Anc,
             "eq" | "equalizer" | "equalizer-type" | "equalizertype" => Key::Equalizer,
-            "touchpadlock" | "tpl" | "locktouchpad" | "touchpad" => Key::Touchpadlock,
+            "touchpadlock" | "tpl" | "locktouchpad" => Key::Touchpadlock,
+            "touchpad" => Key::Touchpad,
             _ => return None,
         })
     }
