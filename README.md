@@ -22,6 +22,24 @@ Run following command:
 cargo install earbuds
 ```
 
+# Polybar
+![Polybar](/.imgs/polybar.png)
+<br>
+You can display the status of your buds live in your polybar with [this script](https://github.com/JojiiOfficial/LiveBudsCli/tree/master/scripts/polybar.sh)
+<br>
+To achieve this, you have to add following to your polybar config and move the script into your polybar script folder. Don't forget to add `buds` to the modules section.
+```
+[module/buds]
+type = custom/script
+interval = 8
+label = %output%
+exec = ~/.config/polybar/scripts/polybar.sh
+click-middle = earbuds set touchpadlock 0 ; activate touchpad 
+click-right = earbuds set touchpadlock 1 ; deactivate touchpad 
+```
+(A toggle function is probably going to be added at a later point in time)
+
+
 # Usage
 To get most of the features listed above, you need to have a daemon instance running (`earbuds -d`). If you run one of the commands 
 listed below, the daemon automatically gets started.
