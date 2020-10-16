@@ -1,15 +1,25 @@
 #!/bin/sh
-
 BUDS_STATUS=`earbuds status -o json`
 
 REQ_STATUS=`echo $BUDS_STATUS | jq '.status' -r`
 if [ "$REQ_STATUS" == "error" ];
 then
     echo
-    exit;
+    exit 1;
+fi
+
+LEFT=$(echo $BUDS_STATUS | jq -r '.payload.batt_left')
+RIGHT=$(echo $BUDS_STATUS | jq -r '.payload.batt_right')
+
+if [ "`echo $BUDS_STATUS | jq '.payload.placement_left'`" == "3" ];
+then
+    LEFT="⚡$LEFT"
+fi
+
+if [ "`echo $BUDS_STATUS | jq '.payload.placement_right'`" == "3" ];
+then
+    RIGHT="⚡$RIGHT"
 fi
 
 
-OUT=$(echo $BUDS_STATUS | jq '("L: " + (.payload.batt_left|tostring) + "% | R: " + (.payload.batt_right|tostring) + "%")' -r)
-
-echo "($OUT)"
+echo "(L: $LEFT% | R: $RIGHT%)"
