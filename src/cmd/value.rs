@@ -6,8 +6,8 @@ use clap::ArgMatches;
 use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType};
 
 /// Set a value
-pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
-    let value = app.value_of("value").unwrap();
+pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool) {
+    let value = app.value_of("value").unwrap_or_default();
     let skey = app.value_of("key").unwrap();
     let key = match Key::parse(skey) {
         Some(k) => k,
@@ -18,7 +18,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
     };
 
     // Check value input
-    if !is_value_ok(key, value) {
+    if !toggle && !is_value_ok(key, value) {
         println!("invalid value: '{}' for key: '{}'", value, skey);
         return;
     }
@@ -28,6 +28,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
         utils::get_device_from_app(&app),
         key.value(),
         get_value(key, value),
+        toggle,
     );
 
     // Do unix_socket request

@@ -100,6 +100,26 @@ fn build_cli() -> App<'static> {
                 )
                 .arg(Arg::new("value").required(true).takes_value(true)),
         )
+        .subcommand(
+            App::new("toggle")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::ColoredHelp)
+                .about("Toggle the state of a feature")
+                .arg(
+                    Arg::new("key")
+                        .required(true)
+                        .takes_value(true)
+                        .possible_values(&[
+                            "nc",
+                            "anc",
+                            "noise-reduction",
+                            "noisereduction",
+                            "touchpadlock",
+                            "tpl",
+                            "touchpad",
+                        ]),
+                ),
+        )
 }
 
 #[async_std::main]
@@ -196,7 +216,12 @@ async fn main() {
 
     // Run set command
     if let Some(subcommand) = clap.subcommand_matches("set") {
-        cmd::value::set(&mut socket_client, subcommand);
+        cmd::value::set(&mut socket_client, subcommand, false);
+    }
+
+    // Run toggle command
+    if let Some(subcommand) = clap.subcommand_matches("toggle") {
+        cmd::value::set(&mut socket_client, subcommand, true);
     }
 }
 

@@ -81,6 +81,10 @@ pub async fn handle_client(
             let mut device = connection_data.get_device_mut(&device_addr).unwrap();
             new_payload = set_buds_value(&payload, device_addr.clone(), &mut device).await
         }
+        "toggle_value" => {
+            let mut device = connection_data.get_device_mut(&device_addr).unwrap();
+            new_payload = toggle_buds_value(&payload, device_addr.clone(), &mut device).await
+        }
         "set_config" => {
             let device = connection_data.get_device(&device_addr).unwrap();
             new_payload = Response::new_success(device.inner.address.clone(), None);
@@ -91,6 +95,43 @@ pub async fn handle_client(
     // Respond. Return on error
     if !respond(&new_payload, &mut write_stream).await {
         return;
+    }
+}
+
+async fn toggle_buds_value<T>(
+    payload: &Request,
+    address: String,
+    device_data: &mut BudsInfo,
+) -> Response<T>
+where
+    T: serde::ser::Serialize,
+{
+    let get_err = |msg: &str| -> Response<T> { Response::new_error(address.clone(), msg, None) };
+
+    // Check required fields set
+    if payload.opt_param1.is_none() {
+        return get_err("Missing parameter");
+    }
+
+    let key = payload.opt_param1.clone().unwrap();
+    let value = {
+        match key.as_str() {
+            "noise_reduction" => (!device_data.inner.noise_reduction).to_string(),
+            "lock_touchpad" => (!device_data.inner.touchpads_blocked).to_string(),
+            _ => {
+                return get_err("Invalid key");
+            }
+        }
+    };
+
+    // Run desired command
+    let res = set_buds_option(key.as_str(), value.as_str(), device_data).await;
+
+    // Return success or error based on the success of the set command
+    if res.is_ok() {
+        Response::new_success(device_data.inner.address.clone(), None)
+    } else {
+        get_err(res.err().unwrap().as_str())
     }
 }
 

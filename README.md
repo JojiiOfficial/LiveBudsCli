@@ -34,10 +34,9 @@ type = custom/script
 interval = 8
 label = %output%
 exec = ~/.config/polybar/scripts/polybar.sh
-click-middle = earbuds set touchpadlock 0 ; activate touchpad 
-click-right = earbuds set touchpadlock 1 ; deactivate touchpad 
+click-middle = earbuds toggle anc
+click-right = earbuds toggle touchpadlock
 ```
-(A toggle function is probably going to be added at a later point in time)
 
 
 # Usage
@@ -52,6 +51,11 @@ earbuds status
 Set equalizer to Bass boost
 ```
 earbuds set eq bass
+```
+
+Toggle noise reduction or the touchpad lock
+```
+earbuds toggle anc/touchpad
 ```
 
 Get Status in json format

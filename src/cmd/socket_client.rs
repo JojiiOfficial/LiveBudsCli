@@ -54,8 +54,23 @@ pub fn new_status_request(device: Option<String>) -> Request {
 }
 
 // Create new set_value request
-pub fn new_set_value_request(device: Option<String>, key: String, value: String) -> Request {
-    let mut request = Request::new("set_value".to_owned(), device);
+pub fn new_set_value_request(
+    device: Option<String>,
+    key: String,
+    value: String,
+    toggle: bool,
+) -> Request {
+    let mut request = Request::new(
+        {
+            if toggle {
+                "toggle_value"
+            } else {
+                "set_value"
+            }
+        }
+        .to_owned(),
+        device,
+    );
     request.opt_param1 = Some(key);
     request.opt_param2 = Some(value);
     request
