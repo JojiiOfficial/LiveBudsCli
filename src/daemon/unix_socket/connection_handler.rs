@@ -20,7 +20,7 @@ use std::sync::Arc;
 pub async fn handle_client(
     stream: UnixStream,
     cd: Arc<Mutex<ConnectionData>>,
-    _config: Arc<Mutex<Config>>,
+    config: Arc<Mutex<Config>>,
 ) {
     let mut read_stream = BufReader::new(&stream);
     let mut write_stream = BufWriter::new(&stream);
@@ -85,10 +85,7 @@ pub async fn handle_client(
             let mut device = connection_data.get_device_mut(&device_addr).unwrap();
             new_payload = toggle_buds_value(&payload, device_addr.clone(), &mut device).await
         }
-        "set_config" => {
-            let device = connection_data.get_device(&device_addr).unwrap();
-            new_payload = Response::new_success(device.inner.address.clone(), None);
-        }
+        "set_config" => new_payload = set_config_value(&payload, device_addr.clone(), config).await,
         _ => return,
     };
 
@@ -96,6 +93,57 @@ pub async fn handle_client(
     if !respond(&new_payload, &mut write_stream).await {
         return;
     }
+}
+
+// Set the value of a config option for a device
+async fn set_config_value<T>(
+    payload: &Request,
+    address: String,
+    config: Arc<Mutex<Config>>,
+) -> Response<T>
+where
+    T: serde::ser::Serialize,
+{
+    let get_err = |msg: &str| -> Response<T> { Response::new_error(address.clone(), msg, None) };
+    let mut config = config.lock().await;
+
+    // Check if device already has a config entry
+    // (should be available but you never know)
+    if !config.has_device_config(&address) {
+        return get_err("Device has no config!");
+    }
+
+    // Check required fields set
+    if payload.opt_param1.is_none() || payload.opt_param2.is_none() {
+        return get_err("Missing parameter");
+    }
+
+    let key = payload.opt_param1.clone().unwrap();
+    let value = str_to_bool(payload.opt_param2.clone().unwrap());
+
+    // Get the right config entry mutable
+    let cfg = config.get_device_config_mut(&address);
+    if cfg.is_none() {
+        return get_err("error getting config!");
+    }
+    let mut cfg = cfg.unwrap();
+
+    // Set the right value of the config
+    match key.as_str() {
+        "auto_pause" => cfg.auto_pause_music = value,
+        "auto_play" => cfg.auto_resume_music = value,
+        "low_battery_notification" => cfg.low_battery_notification = value,
+        _ => {
+            return get_err("Invalid key");
+        }
+    }
+
+    // Try to save the config
+    if let Err(err) = config.save().await {
+        return get_err(format!("Err saving config: {}", err).as_str());
+    }
+
+    return Response::new_success(address.clone(), None);
 }
 
 async fn toggle_buds_value<T>(

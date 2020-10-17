@@ -75,6 +75,16 @@ impl Config {
         None
     }
 
+    /// Get configuration for a given device
+    pub fn get_device_config_mut(&mut self, address: &str) -> Option<&mut BudsConfig> {
+        for elem in &mut self.buds_settings {
+            if elem.address.as_str() == address {
+                return Some(elem);
+            }
+        }
+        None
+    }
+
     /// Check whether the config has a given device config
     pub fn has_device_config(&self, address: &str) -> bool {
         self.buds_settings.iter().any(|i| i.address == address)

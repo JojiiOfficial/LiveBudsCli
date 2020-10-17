@@ -75,3 +75,11 @@ pub fn new_set_value_request(
     request.opt_param2 = Some(value);
     request
 }
+
+// Create new set_config request
+pub fn new_set_config_request(device: Option<String>, key: String, value: String) -> Request {
+    let mut request = Request::new("set_config".to_owned(), device);
+    request.opt_param1 = Some(key);
+    request.opt_param2 = Some(value);
+    request
+}

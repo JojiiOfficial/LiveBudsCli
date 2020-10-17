@@ -25,6 +25,14 @@ fn build_cli() -> App<'static> {
         .author("Jojii S")
         .about("Control your Galaxy Buds live from cli")
         .arg(
+            Arg::new("output")
+                .short('o')
+                .long("output")
+                .global(true)
+                .value_hint(ValueHint::Unknown)
+                .possible_values(&["json", "normal"]),
+        )
+        .arg(
             Arg::new("generator")
                 .long("generate")
                 .about("Generate completion scripts for a given type of shell")
@@ -67,14 +75,7 @@ fn build_cli() -> App<'static> {
             App::new("status")
                 .setting(AppSettings::ColoredHelp)
                 .alias("info")
-                .about("Display informations for a given device")
-                .arg(
-                    Arg::new("output")
-                        .short('o')
-                        .long("output")
-                        .value_hint(ValueHint::Unknown)
-                        .possible_values(&["json", "normal"]),
-                ),
+                .about("Display informations for a given device"),
         )
         .subcommand(
             App::new("set")
@@ -119,6 +120,29 @@ fn build_cli() -> App<'static> {
                             "tpl",
                             "touchpad",
                         ]),
+                ),
+        )
+        .subcommand(
+            App::new("config")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::ColoredHelp)
+                .about("Interact with the buds configuration")
+                .subcommand(
+                    App::new("set")
+                        .setting(AppSettings::ArgRequiredElseHelp)
+                        .setting(AppSettings::ColoredHelp)
+                        .about("Set a config value")
+                        .arg(
+                            Arg::new("key")
+                                .required(true)
+                                .takes_value(true)
+                                .possible_values(&[
+                                    "auto-pause",
+                                    "auto-play",
+                                    "low-battery-notification",
+                                ]),
+                        )
+                        .arg(Arg::new("value").required(true).takes_value(true)),
                 ),
         )
 }
@@ -223,6 +247,13 @@ async fn main() {
     // Run toggle command
     if let Some(subcommand) = clap.subcommand_matches("toggle") {
         cmd::value::set(&mut socket_client, subcommand, true);
+    }
+
+    // Run toggle command
+    if let Some(config) = clap.subcommand_matches("config") {
+        if let Some(set) = config.subcommand_matches("set") {
+            cmd::config_set::set(&mut socket_client, set);
+        }
     }
 }
 
