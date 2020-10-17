@@ -1,4 +1,6 @@
 # LiveBudsCli
+![crates](https://img.shields.io/crates/dv/earbuds?style=flat-square)
+![PRs](https://img.shields.io/badge/PRs-welcome-56cc14?style=flat-square)
 A cli tool to control your Galaxy live buds
 
 # Features
