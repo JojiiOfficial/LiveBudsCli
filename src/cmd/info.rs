@@ -4,6 +4,7 @@ use crate::daemon::buds_info::BudsInfoInner;
 
 use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
 use clap::ArgMatches;
+use galaxy_buds_live_rs::message::bud_property::Placement;
 
 /// show status of given address
 pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
@@ -29,7 +30,17 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
     println!("Info for '{}':", bt_name);
     println!();
     println!("Battery:\tL: {}%, R: {}%", res.batt_left, res.batt_right);
-    println!("Case:\t\t{}%", res.batt_case);
+
+    // If one bean is not in the case, its batterystatus
+    // can't be deterimned and the buds will always return 100%
+    if res.placement_left == Placement::InOpenCase
+        || res.placement_left == Placement::InCloseCase
+        || res.placement_right == Placement::InCloseCase
+        || res.placement_right == Placement::InOpenCase
+    {
+        println!("Case:\t\t{}%", res.batt_case);
+    }
+
     println!("Equalizer:\t{:?}", res.equalizer_type);
     println!("Touchpads:\t{}", {
         if res.touchpads_blocked {
