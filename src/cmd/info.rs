@@ -42,13 +42,6 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
     }
 
     println!("Equalizer:\t{:?}", res.equalizer_type);
-    println!("Touchpads:\t{}", {
-        if res.touchpads_blocked {
-            "Blocked"
-        } else {
-            "Enabled"
-        }
-    });
     println!("ANC:\t\t{}", {
         if res.noise_reduction {
             "Enabled"
@@ -56,9 +49,16 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
             "Disabled"
         }
     });
-
+    println!("Touchpads:\t{}", {
+        if res.touchpads_blocked {
+            "Blocked"
+        } else {
+            "Enabled"
+        }
+    });
     println!("Left option:\t{:?}", res.touchpad_option_left);
     println!("Right option:\t{:?}", res.touchpad_option_right);
+
 }
 
 fn get_bt_device_name<S: AsRef<str>>(dev_addr: S) -> Option<String> {
