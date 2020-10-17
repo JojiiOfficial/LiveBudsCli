@@ -12,7 +12,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-galaxy_buds_live_rs = "0.1.5"
+galaxy_buds_live_rs = "0.1.6"
 clap = "3.0.0-beta.2"
 async-std = { version = "1.6.5", features = ["attributes"] }
 bluetooth-serial-port-async = "0.6.0"

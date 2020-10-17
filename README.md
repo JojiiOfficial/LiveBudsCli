@@ -15,6 +15,10 @@ A cli tool to control your Galaxy live buds
 
 # Install
 
+
+## Pacman repo
+You can get it precompiled from my [pacman repository](https://repo.jojii.de)
+
 ## AUR
 `yay -S earbuds`
 
@@ -23,6 +27,7 @@ Run following command:
 ```
 cargo install earbuds
 ```
+
 
 # Polybar
 ![Polybar](/.imgs/polybar.png)
