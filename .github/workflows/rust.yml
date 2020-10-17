@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev -y
         cargo build --verbose
-    - name: Test
+    - name: test
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev -y
         cargo test --verbose

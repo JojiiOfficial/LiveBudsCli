@@ -1,7 +1,8 @@
 ![PRs](https://img.shields.io/badge/PRs-welcome-56cc14?style=flat-square)
+[![ci/cd](https://img.shields.io/github/workflow/status/JojiiOfficial/LiveBudsCli/Rust?style=flat-square)](https://github.com/JojiiOfficial/LiveBudsCli/actions?query=workflow%3ARust)
+[![crates](https://img.shields.io/crates/dv/earbuds?style=flat-square)](https://crates.io/crates/earbuds)
 [![earbuds](https://img.shields.io/aur/version/earbuds?style=flat-square&label=earbuds&logo=arch-linux)](https://aur.archlinux.org/packages/earbuds/)
 [![earbuds-git](https://img.shields.io/aur/version/earbuds-git?style=flat-square&label=earbuds-git&logo=arch-linux)](https://aur.archlinux.org/packages/earbuds-git/)
-[![crates](https://img.shields.io/crates/dv/earbuds?style=flat-square)](https://crates.io/crates/earbuds)
 
 # LiveBudsCli
 A cli tool to control your Galaxy live buds
