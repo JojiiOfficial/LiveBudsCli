@@ -76,14 +76,14 @@ mod placement_dser {
     where
         S: Serializer,
     {
-        return s.serialize_u8(placement.encode());
+        s.serialize_u8(placement.encode())
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Placement, D::Error>
     where
         D: Deserializer<'de>,
     {
-        return Ok(Placement::decode(u8::deserialize(deserializer)?));
+        Ok(Placement::decode(u8::deserialize(deserializer)?))
     }
 }
 
@@ -96,14 +96,14 @@ mod equalizer_dser {
     where
         S: Serializer,
     {
-        return s.serialize_u8(equalizer_type.encode());
+        s.serialize_u8(equalizer_type.encode())
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<EqualizerType, D::Error>
     where
         D: Deserializer<'de>,
     {
-        return Ok(EqualizerType::decode(u8::deserialize(deserializer)?));
+        Ok(EqualizerType::decode(u8::deserialize(deserializer)?))
     }
 }
 
@@ -116,13 +116,13 @@ mod touchpad_option_dser {
     where
         S: Serializer,
     {
-        return s.serialize_u8(touchpad_option.encode());
+        s.serialize_u8(touchpad_option.encode())
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<TouchpadOption, D::Error>
     where
         D: Deserializer<'de>,
     {
-        return Ok(TouchpadOption::decode(u8::deserialize(deserializer)?));
+        Ok(TouchpadOption::decode(u8::deserialize(deserializer)?))
     }
 }

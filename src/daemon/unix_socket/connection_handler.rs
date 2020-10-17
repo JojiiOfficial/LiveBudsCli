@@ -143,7 +143,7 @@ where
         return get_err(format!("Err saving config: {}", err).as_str());
     }
 
-    return Response::new_success(address.clone(), None);
+    Response::new_success(address.clone(), None)
 }
 
 async fn toggle_buds_value<T>(

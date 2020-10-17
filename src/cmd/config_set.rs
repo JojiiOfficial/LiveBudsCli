@@ -48,12 +48,10 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
     let res = socket_client::to_response::<String>(&res);
     if res.is_success() {
         println!("Success");
+    } else if let Some(err_msg) = res.status_message {
+        println!("Error: {}", err_msg);
     } else {
-        if let Some(err_msg) = res.status_message {
-            println!("Error: {}", err_msg);
-        } else {
-            println!("Error!")
-        }
+        println!("Error!")
     }
 }
 

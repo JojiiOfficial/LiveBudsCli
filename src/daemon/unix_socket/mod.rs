@@ -77,6 +77,6 @@ where
 
     /// return true if response represents a success
     pub fn is_success(&self) -> bool {
-        self.status == "success".to_owned()
+        self.status == *"success"
     }
 }

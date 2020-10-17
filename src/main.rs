@@ -161,24 +161,22 @@ async fn main() {
     let kill_daemon = clap.is_present("kill-daemon");
     let quiet = clap.is_present("quiet");
 
-    if kill_daemon {
-        if check_daemon_running(DAEMON_PATH.to_owned()).is_err() {
-            let pids = ofiles::opath(DAEMON_PATH);
-            if let Ok(pids) = pids {
-                let u: u32 = (*pids.get(0).unwrap()).into();
-                if let Err(err) = nix::sys::signal::kill(
-                    nix::unistd::Pid::from_raw(u as i32),
-                    nix::sys::signal::SIGTERM,
-                ) {
-                    eprintln!("Error killing process: {:?}", err);
-                    exit(1);
-                } else if !quiet {
-                    println!("Daemon exited!");
-                }
-
-                // Hacky way not to display annoying cargo warnings
-                try_delete_socket(DAEMON_PATH).unwrap_or_default();
+    if kill_daemon && check_daemon_running(DAEMON_PATH.to_owned()).is_err() {
+        let pids = ofiles::opath(DAEMON_PATH);
+        if let Ok(pids) = pids {
+            let u: u32 = (*pids.get(0).unwrap()).into();
+            if let Err(err) = nix::sys::signal::kill(
+                nix::unistd::Pid::from_raw(u as i32),
+                nix::sys::signal::SIGTERM,
+            ) {
+                eprintln!("Error killing process: {:?}", err);
+                exit(1);
+            } else if !quiet {
+                println!("Daemon exited!");
             }
+
+            // Hacky way not to display annoying cargo warnings
+            try_delete_socket(DAEMON_PATH).unwrap_or_default();
         }
     }
 

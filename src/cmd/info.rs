@@ -25,7 +25,7 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
     let status = socket_client::to_buds_info(status);
     let res: BudsInfoInner = utils::unwrap_response(&status).unwrap();
 
-    let bt_name = get_bt_device_name(&res.address).unwrap_or(res.address.clone());
+    let bt_name = get_bt_device_name(&res.address).unwrap_or_else(|| res.address.clone());
 
     println!("Info for '{}':", bt_name);
     println!();
@@ -58,7 +58,6 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
     });
     println!("Left option:\t{:?}", res.touchpad_option_left);
     println!("Right option:\t{:?}", res.touchpad_option_right);
-
 }
 
 fn get_bt_device_name<S: AsRef<str>>(dev_addr: S) -> Option<String> {
