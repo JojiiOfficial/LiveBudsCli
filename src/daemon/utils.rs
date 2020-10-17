@@ -14,7 +14,7 @@ pub fn is_bt_device_buds_live(device: &BluetoothDevice) -> bool {
 pub fn str_to_bool<S: AsRef<str>>(s: S) -> bool {
     matches!(
         s.as_ref().to_lowercase().as_str(),
-        "1" | "true" | "yes" | "y" | "0" | "no" | "n" | "false" | "enabled" | "on"
+        "1" | "true" | "yes" | "y" | "enabled" | "on"
     )
 }
 
