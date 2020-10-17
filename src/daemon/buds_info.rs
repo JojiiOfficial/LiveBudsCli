@@ -1,7 +1,7 @@
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
 use galaxy_buds_live_rs::message;
-use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement};
+use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement, TouchpadOption};
 use serde_derive::{Deserialize, Serialize};
 
 /// Informations about a connected pair
@@ -26,6 +26,10 @@ pub struct BudsInfoInner {
     pub touchpads_blocked: bool,
     pub noise_reduction: bool,
     pub did_battery_notify: bool,
+    #[serde(with = "touchpad_option_dser")]
+    pub touchpad_option_left: TouchpadOption,
+    #[serde(with = "touchpad_option_dser")]
+    pub touchpad_option_right: TouchpadOption,
 }
 
 impl BudsInfo {
@@ -43,6 +47,8 @@ impl BudsInfo {
                 touchpads_blocked: false,
                 noise_reduction: false,
                 did_battery_notify: false,
+                touchpad_option_left: TouchpadOption::Undetected,
+                touchpad_option_right: TouchpadOption::Undetected,
             },
         }
     }
@@ -98,5 +104,25 @@ mod equalizer_dser {
         D: Deserializer<'de>,
     {
         return Ok(EqualizerType::decode(u8::deserialize(deserializer)?));
+    }
+}
+
+// Serialize/Deserialize TouchpadOption
+mod touchpad_option_dser {
+    use galaxy_buds_live_rs::message::bud_property::{BudProperty, TouchpadOption};
+    use serde::{self, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(touchpad_option: &TouchpadOption, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        return s.serialize_u8(touchpad_option.encode());
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<TouchpadOption, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        return Ok(TouchpadOption::decode(u8::deserialize(deserializer)?));
     }
 }

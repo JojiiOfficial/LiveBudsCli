@@ -15,7 +15,7 @@ A cli tool to control your Galaxy live buds
 - [x] Individual device configs
 - [x] Json output for scripts (via `jq`)
 - [x] Bash completion (for every shell)
-- [ ] Change touchpad tap action
+- [x] Change touchpad tap action
 - [x] Change config options from cli
 
 # Install
@@ -73,4 +73,9 @@ earbuds toggle anc/touchpad
 Get Status in json format
 ```
 earbuds status -o json
+```
+
+Set the left touchpad tap command to spotify
+```
+earbuds set tap-action spotify left
 ```

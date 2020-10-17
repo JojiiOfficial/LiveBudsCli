@@ -163,6 +163,8 @@ fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
     info.inner.equalizer_type = update.equalizer_type;
     info.inner.touchpads_blocked = update.touchpads_blocked;
     info.inner.noise_reduction = update.noise_reduction;
+    info.inner.touchpad_option_left = update.touchpad_option_left;
+    info.inner.touchpad_option_right = update.touchpad_option_right;
 }
 
 // Update a BudsInfo to the values of an extended_status_update

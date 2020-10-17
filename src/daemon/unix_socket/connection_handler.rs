@@ -1,7 +1,7 @@
 use super::super::bluetooth::rfcomm_connector::ConnectionData;
 use super::super::buds_config::Config;
 use super::super::buds_info::{BudsInfo, BudsInfoInner};
-use super::super::utils::str_to_bool;
+use super::super::utils;
 use super::{Request, Response};
 
 use async_std::{
@@ -10,8 +10,8 @@ use async_std::{
     sync::Mutex,
 };
 use galaxy_buds_live_rs::message::{
-    bud_property::{BudProperty, EqualizerType},
-    lock_touchpad, set_noise_reduction,
+    bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
+    lock_touchpad, set_noise_reduction, set_touchpad_option,
     simple::new_equalizer,
 };
 use std::sync::Arc;
@@ -119,7 +119,7 @@ where
     }
 
     let key = payload.opt_param1.clone().unwrap();
-    let value = str_to_bool(payload.opt_param2.clone().unwrap());
+    let value = utils::str_to_bool(payload.opt_param2.clone().unwrap());
 
     // Get the right config entry mutable
     let cfg = config.get_device_config_mut(&address);
@@ -173,7 +173,13 @@ where
     };
 
     // Run desired command
-    let res = set_buds_option(key.as_str(), value.as_str(), device_data).await;
+    let res = set_buds_option(
+        key.as_str(),
+        value.as_str(),
+        device_data,
+        &payload.opt_param3,
+    )
+    .await;
 
     // Return success or error based on the success of the set command
     if res.is_ok() {
@@ -202,7 +208,13 @@ where
     let value = payload.opt_param2.clone().unwrap();
 
     // Run desired command
-    let res = set_buds_option(key.as_str(), value.as_str(), device_data).await;
+    let res = set_buds_option(
+        key.as_str(),
+        value.as_str(),
+        device_data,
+        &payload.opt_param3,
+    )
+    .await;
 
     // Return success or error based on the success of the set command
     if res.is_ok() {
@@ -213,11 +225,16 @@ where
 }
 
 // Set the actual value
-async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> Result<(), String> {
+async fn set_buds_option(
+    key: &str,
+    value: &str,
+    device_data: &mut BudsInfo,
+    opt_param3: &Option<String>,
+) -> Result<(), String> {
     match key {
         // Set noise reduction
         "noise_reduction" => {
-            let value = str_to_bool(&value);
+            let value = utils::str_to_bool(&value);
             let msg = set_noise_reduction::new(value);
             let res = device_data.send(msg).await;
             if res.is_ok() {
@@ -228,7 +245,7 @@ async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> 
 
         // Set Touchpad lock
         "lock_touchpad" => {
-            let value = str_to_bool(&value);
+            let value = utils::str_to_bool(&value);
             let msg = lock_touchpad::new(value);
             let res = device_data.send(msg).await;
             if res.is_ok() {
@@ -249,7 +266,39 @@ async fn set_buds_option(key: &str, value: &str, device_data: &mut BudsInfo) -> 
             }
             Err(_) => Err("could not parse value".to_string()),
         },
-        _ => Err("Invaild key to set to".to_string()),
+
+        // Touchpad option
+        "touchpad_action" => match value.parse::<u8>() {
+            Ok(val) => {
+                let option = TouchpadOption::decode(val);
+                let mut left = device_data.inner.touchpad_option_left;
+                let mut right = device_data.inner.touchpad_option_right;
+
+                if opt_param3.is_some() {
+                    let side = utils::str_to_side(opt_param3.as_ref().unwrap());
+                    if side.is_none() {
+                        return Err("Invalid side".to_string());
+                    }
+                    match side.unwrap() {
+                        Side::Left => left = option,
+                        Side::Right => right = option,
+                    }
+                } else {
+                    left = option;
+                    right = option;
+                }
+
+                let msg = set_touchpad_option::new(left, right);
+                let res = device_data.send(msg).await;
+                if res.is_ok() {
+                    device_data.inner.touchpad_option_left = left;
+                    device_data.inner.touchpad_option_right = right;
+                }
+                res
+            }
+            Err(_) => Err("could not parse value".to_string()),
+        },
+        _ => Err("Invalid key to set to".to_string()),
     }
 }
 

@@ -3,7 +3,7 @@ use super::utils;
 use crate::daemon::utils::{is_str_bool, str_to_bool};
 
 use clap::ArgMatches;
-use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType};
+use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType, TouchpadOption};
 
 /// Set a value
 pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool) {
@@ -24,12 +24,17 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool) {
     }
 
     // Build request payload
-    let request = socket_client::new_set_value_request(
+    let mut request = socket_client::new_set_value_request(
         utils::get_device_from_app(&app),
         key.value(),
         get_value(key, value),
         toggle,
     );
+
+    // Set opt param if present
+    if app.is_present("opt") {
+        request.opt_param3 = app.value_of("opt").map(|s| s.to_owned());
+    }
 
     // Do unix_socket request
     let res = match sc.do_request(request) {
@@ -65,6 +70,7 @@ fn get_value(key: Key, value: &str) -> String {
         Key::Anc | Key::Touchpadlock => str_to_bool(value).to_string(),
         Key::Touchpad => (!str_to_bool(value)).to_string(),
         Key::Equalizer => parse_equalizer(value).encode().to_string(),
+        Key::TapAction => parse_tap_action(value).encode().to_string(),
     }
 }
 
@@ -73,6 +79,18 @@ fn is_value_ok(key: Key, value: &str) -> bool {
     match key {
         Key::Touchpadlock | Key::Touchpad | Key::Anc => is_str_bool(value),
         Key::Equalizer => parse_equalizer(value) != EqualizerType::Undetected,
+        Key::TapAction => parse_tap_action(value) != TouchpadOption::Undetected,
+    }
+}
+
+// parse equalizer strings to enum variants
+fn parse_tap_action(value: &str) -> TouchpadOption {
+    match value.to_lowercase().as_str() {
+        "volume" => TouchpadOption::Volume,
+        "spotify" => TouchpadOption::Spotify,
+        "voice-command" => TouchpadOption::VoiceCommand,
+        "anc" | "nc" | "noice-canceling" | "noice-reduction" => TouchpadOption::NoiseCanceling,
+        _ => TouchpadOption::Undetected,
     }
 }
 
@@ -95,6 +113,7 @@ enum Key {
     Equalizer,
     Touchpadlock,
     Touchpad, // I prefer to type 'set touchpad 1' instead of 'set touchpadlock 0'
+    TapAction,
 }
 
 impl Key {
@@ -104,6 +123,7 @@ impl Key {
             Key::Equalizer => "equalizer",
             Key::Touchpadlock => "lock_touchpad",
             Key::Touchpad => "lock_touchpad",
+            Key::TapAction => "touchpad_action",
         })
     }
 
@@ -113,6 +133,7 @@ impl Key {
             "eq" | "equalizer" | "equalizer-type" | "equalizertype" => Key::Equalizer,
             "touchpadlock" | "tpl" | "locktouchpad" => Key::Touchpadlock,
             "touchpad" => Key::Touchpad,
+            "tap-action" | "touchpad-action" => Key::TapAction,
             _ => return None,
         })
     }

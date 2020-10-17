@@ -1,4 +1,5 @@
 use blurz::BluetoothDevice;
+use galaxy_buds_live_rs::message::bud_property::Side;
 
 /// Checks whether a device is a pair of buds live
 pub fn is_bt_device_buds_live(device: &BluetoothDevice) -> bool {
@@ -34,4 +35,12 @@ pub fn is_str_bool<S: AsRef<str>>(s: S) -> bool {
             | "off"
             | "disabled"
     )
+}
+
+pub fn str_to_side<S: AsRef<str>>(s: S) -> Option<Side> {
+    Some(match s.as_ref() {
+        "left" | "l" => Side::Left,
+        "right" | "r" => Side::Right,
+        _ => return None,
+    })
 }

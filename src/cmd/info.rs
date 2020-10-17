@@ -55,7 +55,10 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
         } else {
             "Disabled"
         }
-    })
+    });
+
+    println!("Left option:\t{:?}", res.touchpad_option_left);
+    println!("Right option:\t{:?}", res.touchpad_option_right);
 }
 
 fn get_bt_device_name<S: AsRef<str>>(dev_addr: S) -> Option<String> {

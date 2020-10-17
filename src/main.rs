@@ -98,9 +98,16 @@ fn build_cli() -> App<'static> {
                             "touchpadlock",
                             "tpl",
                             "touchpad",
+                            "tap-action",
+                            "touchpad-action",
                         ]),
                 )
-                .arg(Arg::new("value").required(true).takes_value(true)),
+                .arg(Arg::new("value").required(true).takes_value(true))
+                .arg(
+                    Arg::new("opt")
+                        .about("Provide additional input for some keys")
+                        .takes_value(true),
+                ),
         )
         .subcommand(
             App::new("toggle")
