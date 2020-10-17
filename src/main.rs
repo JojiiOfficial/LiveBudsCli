@@ -51,6 +51,7 @@ fn build_cli() -> App<'static> {
             Arg::new("quiet")
                 .about("Don't print extra output")
                 .short('q')
+                .global(true)
                 .long("quiet"),
         )
         .arg(

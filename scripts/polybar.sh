@@ -1,5 +1,5 @@
 #!/bin/sh
-BUDS_STATUS=`earbuds status -o json`
+BUDS_STATUS=`earbuds status -o json -q`
 
 REQ_STATUS=`echo $BUDS_STATUS | jq '.status' -r`
 if [ "$REQ_STATUS" == "error" ];
