@@ -434,7 +434,7 @@ dependencies = [
 
 [[package]]
 name = "earbuds"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "async-std",
  "bluetooth-serial-port-async",
