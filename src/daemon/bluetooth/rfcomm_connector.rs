@@ -1,6 +1,6 @@
 use super::super::buds_config::{BudsConfig, Config};
 use super::super::buds_info::BudsInfo;
-use super::bt_buds_listener;
+use super::bean_connection;
 use super::bt_connection_listener::BudsConnection;
 
 use async_std::sync::Arc;
@@ -155,7 +155,7 @@ pub async fn run(
         }
 
         // Create a new buds connection task
-        async_std::task::spawn(bt_buds_listener::start_listen(
+        async_std::task::spawn(bean_connection::start_listen(
             connection.unwrap(),
             Arc::clone(&config),
             Arc::clone(&arc_ch),

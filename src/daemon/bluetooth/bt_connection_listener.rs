@@ -27,7 +27,6 @@ pub struct BudsConnection {
 /// Listens for new Bluethooth connections
 pub async fn run(sender: Sender<String>) {
     let session = &BluetoothSession::create_session(None).unwrap();
-
     let mut printed_adapter_missing = false;
 
     'outer: loop {

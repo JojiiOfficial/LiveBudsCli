@@ -80,3 +80,9 @@ Set the left touchpad tap command to spotify
 ```
 earbuds set tap-action spotify left
 ```
+
+To debug the daemon run:
+```
+earbuds -k -d --no-fork
+```
+This kills the currently running daemon, creates a new one and starts it in the foreground.

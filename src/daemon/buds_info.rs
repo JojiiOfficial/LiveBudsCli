@@ -14,6 +14,7 @@ pub struct BudsInfo {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct BudsInfoInner {
     pub address: String,
+    pub ready: bool,
     pub batt_left: i8,
     pub batt_right: i8,
     pub batt_case: i8,
@@ -38,6 +39,7 @@ impl BudsInfo {
             stream,
             inner: BudsInfoInner {
                 address: address.as_ref().to_owned(),
+                ready: false,
                 batt_left: 0,
                 batt_right: 0,
                 batt_case: 0,
