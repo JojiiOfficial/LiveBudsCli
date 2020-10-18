@@ -17,7 +17,7 @@ use std::process::{exit, Command, Stdio};
 const DAEMON_PATH: &str = "/tmp/livebuds.sock";
 
 fn build_cli() -> App<'static> {
-    App::new("livebuds")
+    App::new("earbuds")
         .setting(AppSettings::TrailingVarArg)
         .setting(AppSettings::ColoredHelp)
         .setting(AppSettings::ArgRequiredElseHelp)
@@ -29,7 +29,6 @@ fn build_cli() -> App<'static> {
                 .short('o')
                 .long("output")
                 .global(true)
-                .value_hint(ValueHint::Unknown)
                 .possible_values(&["json", "normal"]),
         )
         .arg(
