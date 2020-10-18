@@ -104,12 +104,22 @@ impl ConnectionData {
             return self.get_first_device().map(|i| i.inner.address.clone());
         }
 
-        self.get_device(addr).map(|i| i.inner.address.clone())
+        let device = self.get_device(addr)?;
+
+        if !device.inner.ready {
+            return None;
+        }
+
+        Some(device.inner.address.clone())
     }
 
     /// Get count of connected devices
     pub fn get_device_count(&self) -> usize {
-        self.data.len()
+        self.data
+            .iter()
+            .find(|(_, item)| item.inner.ready)
+            .iter()
+            .count()
     }
 
     fn get_first_device(&self) -> Option<&BudsInfo> {

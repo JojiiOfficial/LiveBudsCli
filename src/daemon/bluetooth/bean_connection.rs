@@ -71,6 +71,11 @@ pub async fn start_listen(
 
         if message.get_id() == ids::EXTENDED_STATUS_UPDATED {
             update_extended_status(&message.into(), info);
+
+            // Set ready after first extended status update
+            if !info.inner.ready {
+                info.inner.ready = true
+            }
             continue;
         }
     }
