@@ -11,9 +11,7 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Build
@@ -24,3 +22,11 @@ jobs:
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev -y
         cargo test --verbose
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: 
+      run: |
+        sudo apt install libdbus-1-dev libbluetooth-dev -y
+        cargo clippy
