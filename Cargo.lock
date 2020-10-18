@@ -226,9 +226,9 @@ dependencies = [
 
 [[package]]
 name = "bluetooth-serial-port-async"
-version = "0.6.0"
+version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51d63f9a910a5d4639d0d6a97007cdc298edaf6393fba233d40ffd3aea917fcc"
+checksum = "e3be2fd0e0b00573e2fb86e1bc590e9f4874d69c268f319108aed96341aaf7e1"
 dependencies = [
  "async-std",
  "enum_primitive",

@@ -29,8 +29,6 @@ pub async fn start_listen(
             Err(_) => {
                 let mut c = ch.lock().await;
                 c.remove_device(connection.addr.as_str()).await;
-
-                println!("exited handle_client");
                 return;
             }
         };
@@ -46,38 +44,51 @@ pub async fn start_listen(
             .entry(connection.addr.clone())
             .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr));
 
-        if message.get_id() == ids::STATUS_UPDATED {
-            let update = message.into();
-
-            // Handle auto resume music and battery notifications
-            {
-                let mut cfg = config.lock().await;
-                cfg.load().await.unwrap();
-
-                if let Some(config) = cfg.get_device_config(&connection.addr) {
-                    if config.auto_resume_music || config.auto_pause_music {
-                        handle_auto_music(&update, info, &config);
-                    }
-
-                    if config.low_battery_notification {
-                        handle_low_battery(&update, info);
-                    }
-                }
+        match message.get_id() {
+            ids::STATUS_UPDATED => {
+                handle_status_update(&message.into(), info, &config, &connection).await
             }
+            ids::EXTENDED_STATUS_UPDATED => handle_extended_update(&message.into(), info),
+            _ => continue,
+        };
+    }
+}
 
-            update_status(&update, info);
-            continue;
+async fn handle_status_update(
+    update: &StatusUpdate,
+    info: &mut BudsInfo,
+    config: &Arc<Mutex<Config>>,
+    connection: &BudsConnection,
+) {
+    update_status(&update, info);
+
+    // Lock the config
+    let mut cfg = config.lock().await;
+
+    // Load the (possibly changed) config values
+    cfg.load().await.unwrap();
+
+    // Check if current device has a config entry
+    if let Some(config) = cfg.get_device_config(&connection.addr) {
+        // Play/Pause audio
+        if config.auto_resume_music || config.auto_pause_music {
+            handle_auto_music(&update, info, &config);
         }
 
-        if message.get_id() == ids::EXTENDED_STATUS_UPDATED {
-            update_extended_status(&message.into(), info);
-
-            // Set ready after first extended status update
-            if !info.inner.ready {
-                info.inner.ready = true
-            }
-            continue;
+        // handle desktop notification
+        if config.low_battery_notification {
+            handle_low_battery(&update, info);
         }
+    }
+}
+
+fn handle_extended_update(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
+    // Update values from extended update
+    update_extended_status(update, info);
+
+    // Set ready after first extended status update
+    if !info.inner.ready {
+        info.inner.ready = true
     }
 }
 
@@ -136,26 +147,31 @@ fn handle_low_battery(update: &StatusUpdate, info: &mut BudsInfo) {
         return;
     }
 
+    // Check if already notified
     if info.inner.did_battery_notify {
         return;
     }
 
-    if l_batt < 20 || r_batt < 20 {
+    // Display a notification below 20% (both have to be above 0%)
+    if l_batt < 20 || r_batt < 20 && (l_batt * r_batt > 0) {
         info.inner.did_battery_notify = true;
 
-        Notification::new()
-            .summary("Buds Live battery low")
-            .body(
-                format!(
-                    "The battery of your Galaxy buds live is pretty low: (L: {}%, R: {}%)",
-                    l_batt, r_batt
-                )
-                .as_str(),
-            )
-            .icon("battery")
-            .show()
-            .unwrap();
+        get_desktop_notification(l_batt, r_batt).show().unwrap();
     }
+}
+
+fn get_desktop_notification(l_batt: i8, r_batt: i8) -> Notification {
+    Notification::new()
+        .summary("Buds Live battery low")
+        .body(
+            format!(
+                "The battery of your Galaxy buds live is pretty low: (L: {}%, R: {}%)",
+                l_batt, r_batt
+            )
+            .as_str(),
+        )
+        .icon("battery")
+        .to_owned()
 }
 
 // Update a BudsInfo to the values of an extended_status_update
