@@ -1,65 +1,25 @@
-use super::super::buds_config::{BudsConfig, Config};
-use super::super::buds_info::BudsInfo;
-use super::bt_connection_listener::BudsConnection;
-use super::rfcomm_connector::ConnHandler;
+use super::super::super::buds_config::{BudsConfig, Config};
+use super::super::super::buds_info::BudsInfo;
+use super::super::bt_connection_listener::BudsConnection;
 
-use async_std::io::prelude::*;
-use async_std::sync::Mutex;
-use galaxy_buds_live_rs::message::{
-    bud_property::Placement, extended_status_updated::ExtendedStatusUpdate, ids,
-    status_updated::StatusUpdate, Message,
-};
+use async_std::sync::{Arc, Mutex};
+use galaxy_buds_live_rs::message::{bud_property::Placement, status_updated::StatusUpdate};
 use mpris::PlayerFinder;
 use notify_rust::Notification;
 
-use std::sync::Arc;
+/*
+use pulsectl::controllers::DeviceControl;
+use pulsectl::controllers::SinkController;
+*/
 
-/// Read buds data
-pub async fn start_listen(
-    connection: BudsConnection,
-    config: Arc<Mutex<Config>>,
-    ch: Arc<Mutex<ConnHandler>>,
-) {
-    let mut stream = connection.socket.get_stream();
-    let mut buffer = [0; 2048];
-
-    loop {
-        let bytes_read = match stream.read(&mut buffer[..]).await {
-            Ok(v) => v,
-            Err(_) => {
-                let mut c = ch.lock().await;
-                c.remove_device(connection.addr.as_str()).await;
-                return;
-            }
-        };
-
-        // The received message from the buds
-        let message = Message::new(&buffer[0..bytes_read]);
-
-        let connection_handler = ch.lock().await;
-        let mut lock = connection_handler.connection_data.lock().await;
-
-        let info = lock
-            .data
-            .entry(connection.addr.clone())
-            .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr));
-
-        match message.get_id() {
-            ids::STATUS_UPDATED => {
-                handle_status_update(&message.into(), info, &config, &connection).await
-            }
-            ids::EXTENDED_STATUS_UPDATED => handle_extended_update(&message.into(), info),
-            _ => continue,
-        };
-    }
-}
-
-async fn handle_status_update(
-    update: &StatusUpdate,
+// Handle a status update
+pub async fn handle(
+    update: StatusUpdate,
     info: &mut BudsInfo,
     config: &Arc<Mutex<Config>>,
     connection: &BudsConnection,
 ) {
+    // Update the local status of the buds
     update_status(&update, info);
 
     // Lock the config
@@ -79,16 +39,6 @@ async fn handle_status_update(
         if config.low_battery_notification {
             handle_low_battery(&update, info);
         }
-    }
-}
-
-fn handle_extended_update(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
-    // Update values from extended update
-    update_extended_status(update, info);
-
-    // Set ready after first extended status update
-    if !info.inner.ready {
-        info.inner.ready = true
     }
 }
 
@@ -172,20 +122,6 @@ fn get_desktop_notification(l_batt: i8, r_batt: i8) -> Notification {
         )
         .icon("battery")
         .to_owned()
-}
-
-// Update a BudsInfo to the values of an extended_status_update
-fn update_extended_status(update: &ExtendedStatusUpdate, info: &mut BudsInfo) {
-    info.inner.batt_left = update.battery_left;
-    info.inner.batt_right = update.battery_right;
-    info.inner.batt_case = update.battery_case;
-    info.inner.placement_left = update.placement_left;
-    info.inner.placement_right = update.placement_right;
-    info.inner.equalizer_type = update.equalizer_type;
-    info.inner.touchpads_blocked = update.touchpads_blocked;
-    info.inner.noise_reduction = update.noise_reduction;
-    info.inner.touchpad_option_left = update.touchpad_option_left;
-    info.inner.touchpad_option_right = update.touchpad_option_right;
 }
 
 // Update a BudsInfo to the values of an extended_status_update

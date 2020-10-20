@@ -165,7 +165,7 @@ pub async fn run(
         }
 
         // Create a new buds connection task
-        async_std::task::spawn(bean_connection::start_listen(
+        async_std::task::spawn(bean_connection::listener::start_listen(
             connection.unwrap(),
             Arc::clone(&config),
             Arc::clone(&arc_ch),

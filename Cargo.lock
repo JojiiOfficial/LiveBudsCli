@@ -446,6 +446,7 @@ dependencies = [
  "nix 0.19.0",
  "notify-rust",
  "ofiles",
+ "rust-pulsectl",
  "serde",
  "serde_derive",
  "serde_json",
@@ -759,6 +760,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dc12a3bc971424edbbf7edaf6e5740483444db63aa8e23d3751ff12a30f306f0"
 dependencies = [
  "pkg-config",
+]
+
+[[package]]
+name = "libpulse-binding"
+version = "2.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1795efad67f34ae95740ded62e3c346e707b0caeb0f6088d75958e97316b5538"
+dependencies = [
+ "libc",
+ "libpulse-sys",
+ "winapi 0.3.9",
+]
+
+[[package]]
+name = "libpulse-sys"
+version = "1.13.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f53857071d564f864755a6945d316cc8fe62c36ed20bd4231c8ab6b62141786"
+dependencies = [
+ "libc",
+ "pkg-config",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1167,6 +1190,15 @@ dependencies = [
  "blake2b_simd",
  "constant_time_eq",
  "crossbeam-utils",
+]
+
+[[package]]
+name = "rust-pulsectl"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0133fcaf02798ef68c074313bbd5a47de2d7edb1d8db9c61872206bd7f398e8"
+dependencies = [
+ "libpulse-binding",
 ]
 
 [[package]]
