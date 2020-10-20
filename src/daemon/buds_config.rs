@@ -36,7 +36,6 @@ impl Config {
                 .map_err(|e| e.to_string())?;
 
             config = toml::from_str(&conf_data).map_err(|e| e.to_string())?;
-            println!("loaded config: {:?}", &config);
         }
 
         Ok(config)
