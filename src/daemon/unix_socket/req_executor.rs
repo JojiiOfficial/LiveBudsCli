@@ -43,9 +43,9 @@ pub async fn set_config_value(
 
     // Set the right value of the config
     match key.as_str() {
-        "auto_pause" => cfg.auto_pause_music = value,
-        "auto_play" => cfg.auto_resume_music = value,
-        "low_battery_notification" => cfg.low_battery_notification = value,
+        "auto_pause" => cfg.auto_pause_music = Some(value),
+        "auto_play" => cfg.auto_resume_music = Some(value),
+        "low_battery_notification" => cfg.low_battery_notification = Some(value),
         _ => {
             return get_err("Invalid key");
         }

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use serde_derive::{Deserialize, Serialize};
 
 use async_std::fs::{self, File};
@@ -9,13 +10,14 @@ pub struct Config {
     pub buds_settings: Vec<BudsConfig>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct BudsConfig {
     pub address: String,
-    pub low_battery_notification: bool,
-    pub auto_resume_music: bool,
-    pub auto_pause_music: bool,
-    pub smart_touchpad: bool,
+    pub low_battery_notification: Option<bool>,
+    pub auto_resume_music: Option<bool>,
+    pub auto_pause_music: Option<bool>,
+    pub auto_sink_change: Option<bool>,
+    pub smart_touchpad: Option<bool>,
 }
 
 impl Config {
@@ -32,7 +34,9 @@ impl Config {
             let conf_data = fs::read_to_string(&config_file)
                 .await
                 .map_err(|e| e.to_string())?;
+
             config = toml::from_str(&conf_data).map_err(|e| e.to_string())?;
+            println!("loaded config: {:?}", &config);
         }
 
         Ok(config)
@@ -137,12 +141,30 @@ pub fn get_home_dir() -> Option<PathBuf> {
 impl BudsConfig {
     /// Create a new device config
     pub fn new(address: String) -> Self {
-        Self {
-            address,
-            low_battery_notification: true,
-            auto_resume_music: true,
-            auto_pause_music: true,
-            smart_touchpad: true,
-        }
+        let mut config = Self::default();
+        config.address = address;
+        config
+    }
+}
+
+impl BudsConfig {
+    pub fn auto_pause(&self) -> bool {
+        self.auto_pause_music.unwrap_or(false)
+    }
+
+    pub fn auto_play(&self) -> bool {
+        self.auto_resume_music.unwrap_or(false)
+    }
+
+    pub fn low_battery_notification(&self) -> bool {
+        self.low_battery_notification.unwrap_or(false)
+    }
+
+    pub fn smart_touchpad(&self) -> bool {
+        self.smart_touchpad.unwrap_or(false)
+    }
+
+    pub fn auto_sink_change(&self) -> bool {
+        self.auto_sink_change.unwrap_or(false)
     }
 }

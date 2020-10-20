@@ -19,9 +19,6 @@ pub async fn handle(
     config: &Arc<Mutex<Config>>,
     connection: &BudsConnection,
 ) {
-    // Update the local status of the buds
-    update_status(&update, info);
-
     // Lock the config
     let mut cfg = config.lock().await;
 
@@ -31,15 +28,18 @@ pub async fn handle(
     // Check if current device has a config entry
     if let Some(config) = cfg.get_device_config(&connection.addr) {
         // Play/Pause audio
-        if config.auto_resume_music || config.auto_pause_music {
+        if config.auto_play() || config.auto_pause() {
             handle_auto_music(&update, info, &config);
         }
 
         // handle desktop notification
-        if config.low_battery_notification {
+        if config.low_battery_notification() {
             handle_low_battery(&update, info);
         }
     }
+
+    // Update the local status of the buds
+    update_status(&update, info);
 }
 
 /// Handle automatically pausing/playing music on earbuds wearing statu changes
@@ -54,7 +54,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
     // is false and update's wearing state is true
     if !was_wearing && is_wearing {
         // Auto resume
-        if !config.auto_resume_music {
+        if !config.auto_play() {
             return;
         }
 
@@ -66,7 +66,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
         }
     } else if is_not_wearing && was_some_wearing {
         // Auto pause music
-        if !config.auto_pause_music {
+        if !config.auto_pause() {
             return;
         }
 
