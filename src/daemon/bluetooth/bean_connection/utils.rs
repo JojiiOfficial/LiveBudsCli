@@ -11,7 +11,6 @@ fn get_player<'a>(finder: &'a PlayerFinder) -> Option<Player> {
 }
 
 pub fn try_pause() {
-    println!("should pause");
     get_finder().and_then(|finder| get_player(&finder).and_then(|player| player.pause().ok()));
 }
 
@@ -25,10 +24,6 @@ pub fn is_some_wearing_state(left: Placement, right: Placement) -> bool {
 
 pub fn is_wearing_state(left: Placement, right: Placement) -> bool {
     left == Placement::Ear && right == Placement::Ear
-}
-
-pub fn is_absolute_not_wearing(left: Placement, right: Placement) -> bool {
-    left != Placement::Ear && right != Placement::Ear
 }
 
 pub fn get_desktop_notification(l_batt: i8, r_batt: i8) -> Notification {
