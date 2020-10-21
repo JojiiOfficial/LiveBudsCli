@@ -74,11 +74,14 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
 fn handle_sink_change(info: &BudsInfo) -> Option<()> {
     let mut handler = SinkController::create();
     let device = get_bt_sink(&mut handler, info)?;
-    let default_device = handler.get_default_device().ok()?;
+    let device_name = device.name?;
 
-    if default_device.index != device.index {
+    let default_device = handler.get_default_device().ok()?;
+    let default_device_name = default_device.name?;
+
+    if device_name != default_device_name {
         // Buds are not set to default
-        println!("not default!");
+        handler.set_default_device(&device_name).ok();
     }
 
     None
