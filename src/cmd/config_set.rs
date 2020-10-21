@@ -70,6 +70,7 @@ enum Key {
     AutoPause,
     AutoPlay,
     LowBatteryNotification,
+    SmartSink,
 }
 
 impl Key {
@@ -78,6 +79,7 @@ impl Key {
             Key::AutoPause => "auto_pause",
             Key::AutoPlay => "auto_play",
             Key::LowBatteryNotification => "low_battery_notification",
+            Key::SmartSink => "smart_sink",
         })
     }
 
@@ -85,6 +87,7 @@ impl Key {
         Some(match key.to_string().to_lowercase().as_str() {
             "auto-pause" => Key::AutoPause,
             "auto-play" => Key::AutoPlay,
+            "smart-sink" => Key::SmartSink,
             "low-battery-notification" => Key::LowBatteryNotification,
             _ => return None,
         })

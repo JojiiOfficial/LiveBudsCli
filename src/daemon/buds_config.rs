@@ -16,7 +16,7 @@ pub struct BudsConfig {
     pub low_battery_notification: Option<bool>,
     pub auto_resume_music: Option<bool>,
     pub auto_pause_music: Option<bool>,
-    pub auto_sink_change: Option<bool>,
+    pub smart_sink: Option<bool>,
     pub smart_touchpad: Option<bool>,
 }
 
@@ -163,7 +163,7 @@ impl BudsConfig {
         self.smart_touchpad.unwrap_or(false)
     }
 
-    pub fn auto_sink_change(&self) -> bool {
-        self.auto_sink_change.unwrap_or(false)
+    pub fn smart_sink(&self) -> bool {
+        self.smart_sink.unwrap_or(false)
     }
 }

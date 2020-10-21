@@ -87,7 +87,7 @@ fn parse_tap_action(value: &str) -> TouchpadOption {
         "volume" => TouchpadOption::Volume,
         "spotify" => TouchpadOption::Spotify,
         "voice-command" => TouchpadOption::VoiceCommand,
-        "anc" | "nc" | "noice-canceling" | "noice-reduction" => TouchpadOption::NoiseCanceling,
+        "anc" => TouchpadOption::NoiseCanceling,
         _ => TouchpadOption::Undetected,
     }
 }
@@ -127,11 +127,11 @@ impl Key {
 
     fn parse(key: &str) -> Option<Key> {
         Some(match key.to_string().to_lowercase().as_str() {
-            "nc" | "anc" | "noise_reduction" | "noise-reduction" => Key::Anc,
-            "eq" | "equalizer" | "equalizer-type" | "equalizertype" => Key::Equalizer,
-            "touchpadlock" | "tpl" | "locktouchpad" => Key::Touchpadlock,
+            "anc" => Key::Anc,
+            "equalizer" => Key::Equalizer,
+            "touchpadlock" => Key::Touchpadlock,
             "touchpad" => Key::Touchpad,
-            "tap-action" | "touchpad-action" => Key::TapAction,
+            "tap-action" => Key::TapAction,
             _ => return None,
         })
     }

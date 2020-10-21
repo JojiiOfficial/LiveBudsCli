@@ -86,19 +86,11 @@ fn build_cli() -> App<'static> {
                         .required(true)
                         .takes_value(true)
                         .possible_values(&[
-                            "eq",
                             "equalizer",
-                            "equalizer-type",
-                            "equalizertype",
-                            "nc",
                             "anc",
-                            "noise-reduction",
-                            "noisereduction",
                             "touchpadlock",
-                            "tpl",
                             "touchpad",
                             "tap-action",
-                            "touchpad-action",
                         ]),
                 )
                 .arg(Arg::new("value").required(true).takes_value(true))
@@ -117,15 +109,7 @@ fn build_cli() -> App<'static> {
                     Arg::new("key")
                         .required(true)
                         .takes_value(true)
-                        .possible_values(&[
-                            "nc",
-                            "anc",
-                            "noise-reduction",
-                            "noisereduction",
-                            "touchpadlock",
-                            "tpl",
-                            "touchpad",
-                        ]),
+                        .possible_values(&["anc", "touchpadlock"]),
                 ),
         )
         .subcommand(
@@ -146,6 +130,7 @@ fn build_cli() -> App<'static> {
                                     "auto-pause",
                                     "auto-play",
                                     "low-battery-notification",
+                                    "smart-sink",
                                 ]),
                         )
                         .arg(Arg::new("value").required(true).takes_value(true)),

@@ -24,7 +24,7 @@ pub async fn handle(
     // Check if current device has a config entry
     if let Some(config) = cfg.get_device_config(&connection.addr) {
         // Play/Pause audio
-        if config.auto_play() || config.auto_pause() || config.auto_sink_change() {
+        if config.auto_play() || config.auto_pause() || config.smart_sink() {
             handle_auto_music(&update, info, &config);
         }
 
@@ -53,7 +53,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
     // True if put buds on
     if !was_wearing && is_wearing {
         // Auto sink change
-        if config.auto_sink_change() {
+        if config.smart_sink() {
             handle_sink_change(&info);
         }
 
@@ -74,14 +74,11 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
 fn handle_sink_change(info: &BudsInfo) -> Option<()> {
     let mut handler = SinkController::create();
     let device = get_bt_sink(&mut handler, info)?;
-    let device_name = device.name?;
-
     let default_device = handler.get_default_device().ok()?;
-    let default_device_name = default_device.name?;
 
-    if device_name != default_device_name {
+    if device.name.as_ref()? != default_device.name.as_ref()? {
         // Buds are not set to default
-        handler.set_default_device(&device_name).ok();
+        handler.set_default_device(&device.name?).ok()?;
     }
 
     None
