@@ -6,10 +6,7 @@ use super::utils;
 use async_std::sync::{Arc, Mutex};
 use galaxy_buds_live_rs::message::status_updated::StatusUpdate;
 
-/*
-use pulsectl::controllers::DeviceControl;
-use pulsectl::controllers::SinkController;
-*/
+use pulsectl::controllers::{types::DeviceInfo, DeviceControl, SinkController};
 
 // Handle a status update
 pub async fn handle(
@@ -48,22 +45,23 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
         utils::is_wearing_state(info.inner.placement_left, info.inner.placement_right);
 
     let was_some_wearing =
-        utils::is_wearing_state(info.inner.placement_left, info.inner.placement_right);
-    let is_not_wearing =
+        utils::is_some_wearing_state(info.inner.placement_left, info.inner.placement_right);
+
+    let is_absolute_not_wearing =
         utils::is_absolute_not_wearing(update.placement_left, update.placement_right);
 
     // True if put buds on
     if !was_wearing && is_wearing {
         // Auto sink change
         if config.auto_sink_change() {
-            println!("change sink here")
+            handle_sink_change(&info);
         }
 
         // Auto resume
         if config.auto_play() {
             utils::try_play();
         }
-    } else if is_not_wearing && was_some_wearing {
+    } else if is_absolute_not_wearing && was_some_wearing {
         // True if take the buds off
 
         if config.auto_pause() {
@@ -71,6 +69,29 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
             utils::try_pause();
         }
     }
+}
+
+fn handle_sink_change(info: &BudsInfo) -> Option<()> {
+    let mut handler = SinkController::create();
+    let device = get_bt_sink(&mut handler, info)?;
+    let default_device = handler.get_default_device().ok()?;
+
+    if default_device.index != device.index {
+        // Buds are not set to default
+        println!("not default!");
+    }
+
+    None
+}
+
+fn get_bt_sink(handler: &mut SinkController, info: &BudsInfo) -> Option<DeviceInfo> {
+    let devices = handler.list_devices().ok()?;
+    devices
+        .iter()
+        .find(|i| {
+            i.proplist.get_str("device.string").unwrap_or("".to_owned()) == info.inner.address
+        })
+        .map(|i| i.to_owned())
 }
 
 fn handle_low_battery(update: &StatusUpdate, info: &mut BudsInfo) {

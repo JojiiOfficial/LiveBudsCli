@@ -11,11 +11,16 @@ fn get_player<'a>(finder: &'a PlayerFinder) -> Option<Player> {
 }
 
 pub fn try_pause() {
+    println!("should pause");
     get_finder().and_then(|finder| get_player(&finder).and_then(|player| player.pause().ok()));
 }
 
 pub fn try_play() {
     get_finder().and_then(|finder| get_player(&finder).and_then(|player| player.play().ok()));
+}
+
+pub fn is_some_wearing_state(left: Placement, right: Placement) -> bool {
+    left == Placement::Ear || right == Placement::Ear
 }
 
 pub fn is_wearing_state(left: Placement, right: Placement) -> bool {
