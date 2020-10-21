@@ -18,6 +18,7 @@ A cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-
 - [x] Bash completion (for every shell)
 - [x] Change touchpad tap action
 - [x] Change config options from cli
+- [x] Auto pulseaudio sink switch
 
 # Install
 
