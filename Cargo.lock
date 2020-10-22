@@ -1020,9 +1020,9 @@ checksum = "37fd5004feb2ce328a52b0b3d01dbf4ffff72583493900ed15f22d4111c51693"
 
 [[package]]
 name = "ofiles"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "010ac6f08e4937074a6969f6bda20c827e9af600469e3dd0ad0dd9be52e5d6d8"
+checksum = "c6d996a29712d694df329d19f0e18632466a42c9de4aab73dca087a1a4c1bd7d"
 dependencies = [
  "error-chain 0.12.4",
  "glob",
