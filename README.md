@@ -18,7 +18,7 @@ A cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-
 - [x] Bash completion (for every shell)
 - [x] Change touchpad tap action
 - [x] Change config options from cli
-- [x] Auto pulseaudio sink switch
+- [x] Automatic sink switch (pulseaudio) [feature: `pulse-sink`, used by default]
 
 # Install
 
@@ -37,7 +37,7 @@ cargo install earbuds
 
 
 # Polybar
-![Polybar](/.imgs/polybar.png)
+![Polybar](.imgs/polybar.png)
 <br>
 You can display the status of your buds live in your polybar with [this script](https://github.com/JojiiOfficial/LiveBudsCli/tree/master/scripts/polybar.sh)
 <br>
@@ -64,7 +64,7 @@ earbuds status
 
 Set equalizer to Bass boost
 ```
-earbuds set eq bass
+earbuds set equalizer bass
 ```
 
 Toggle noise reduction or the touchpad lock
