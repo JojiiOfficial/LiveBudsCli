@@ -17,11 +17,11 @@ jobs:
     - name: Build
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev libpulse-dev -y
-        cargo build --verbose
+        cargo build --verbose --no-default-features
     - name: test
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev libpulse-dev -y
-        cargo test --verbose
+        cargo test --verbose --no-default-features
   clippy:
     runs-on: ubuntu-latest
     steps:
@@ -29,4 +29,4 @@ jobs:
     - name: 
       run: |
         sudo apt install libdbus-1-dev libbluetooth-dev libpulse-dev -y
-        cargo clippy
+        cargo clippy --no-default-features
