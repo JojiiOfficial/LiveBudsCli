@@ -31,6 +31,7 @@ pub struct BudsInfoInner {
     pub touchpad_option_left: TouchpadOption,
     #[serde(with = "touchpad_option_dser")]
     pub touchpad_option_right: TouchpadOption,
+    pub paused_music_earlier: bool,
 }
 
 impl BudsInfo {
@@ -51,6 +52,7 @@ impl BudsInfo {
                 did_battery_notify: false,
                 touchpad_option_left: TouchpadOption::Undetected,
                 touchpad_option_right: TouchpadOption::Undetected,
+                paused_music_earlier: false,
             },
         }
     }

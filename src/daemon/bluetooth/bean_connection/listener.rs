@@ -1,6 +1,6 @@
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
-use super::{extended_status_update, status_update};
+use super::{extended_status_update, status_update, touchpad};
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
@@ -39,6 +39,10 @@ pub async fn start_listen(
             .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr));
 
         match message.get_id() {
+            ids::TOUCHPAD_ACTION => {
+                touchpad::handle_tap(message.into(), info, &config, &connection).await
+            }
+
             ids::STATUS_UPDATED => {
                 status_update::handle(message.into(), info, &config, &connection).await
             }

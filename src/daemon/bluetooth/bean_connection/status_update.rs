@@ -40,7 +40,7 @@ pub async fn handle(
 }
 
 /// Handle automatically pausing/playing music on earbuds wearing statu changes
-fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig) {
+fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsConfig) {
     let is_wearing = utils::is_wearing_state(update.placement_left, update.placement_right);
 
     let was_wearing =
@@ -71,7 +71,10 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
 
         // Auto resume
         if config.auto_play() {
-            utils::try_play();
+            if info.inner.paused_music_earlier {
+                info.inner.paused_music_earlier = false;
+                utils::try_play();
+            }
         }
     } else if !is_some_wearing_state && was_some_wearing {
         // True if take the buds off
@@ -84,7 +87,9 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
 
         if config.auto_pause() {
             // Auto pause music
-            utils::try_pause();
+            if utils::try_pause() {
+                info.inner.paused_music_earlier = true;
+            }
         }
     }
 }
