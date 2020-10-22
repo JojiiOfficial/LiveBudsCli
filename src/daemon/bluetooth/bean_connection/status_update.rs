@@ -6,6 +6,7 @@ use super::utils;
 use async_std::sync::{Arc, Mutex};
 use galaxy_buds_live_rs::message::status_updated::StatusUpdate;
 
+#[cfg(feature = "pulse-sink")]
 use pulsectl::controllers::{types::DeviceInfo, DeviceControl, SinkController};
 
 // Handle a status update
@@ -51,16 +52,19 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
     let is_some_wearing_state =
         utils::is_some_wearing_state(update.placement_left, update.placement_right);
 
+    #[cfg(feature = "pulse-sink")]
     let mut handler = SinkController::create();
 
     // True if put buds on
     if !was_wearing && is_wearing {
         // Auto sink change
+        #[cfg(feature = "pulse-sink")]
         if config.smart_sink() {
             handle_sink_change(&info);
         }
 
         // Don't do music actions if buds aren't default device
+        #[cfg(feature = "pulse-sink")]
         if !is_default(&mut handler, &info).unwrap_or(true) {
             return;
         }
@@ -73,6 +77,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
         // True if take the buds off
 
         // Don't do music actions if buds aren't default device
+        #[cfg(feature = "pulse-sink")]
         if !is_default(&mut handler, &info).unwrap_or(true) {
             return;
         }
@@ -85,13 +90,18 @@ fn handle_auto_music(update: &StatusUpdate, info: &BudsInfo, config: &BudsConfig
 }
 
 // Return true if Earbuds are currently the default output device
+#[cfg(feature = "pulse-sink")]
 fn is_default(handler: &mut SinkController, info: &BudsInfo) -> Option<bool> {
+    #[cfg(not(feature = "pulse-sink"))]
+    return Some(true); // Assume buds are always default on non pulse featured builds
+
     let device = get_bt_sink(handler, info)?;
     let default_device = handler.get_default_device().ok()?;
     Some(device.name.as_ref()? == default_device.name.as_ref()?)
 }
 
 // Change the default output sink to earbuds if they ain't yet
+#[cfg(feature = "pulse-sink")]
 fn handle_sink_change(info: &BudsInfo) -> Option<()> {
     let mut handler = SinkController::create();
 
@@ -104,6 +114,7 @@ fn handle_sink_change(info: &BudsInfo) -> Option<()> {
     None
 }
 
+#[cfg(feature = "pulse-sink")]
 fn get_bt_sink(handler: &mut SinkController, info: &BudsInfo) -> Option<DeviceInfo> {
     let devices = handler.list_devices().ok()?;
     devices
