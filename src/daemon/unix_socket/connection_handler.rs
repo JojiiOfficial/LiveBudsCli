@@ -33,14 +33,17 @@ pub async fn handle_client(
 
     let mut connection_data = cd.lock().await;
 
-    // Respond with error if no device is connected
-    if connection_data.get_device_count() == 0 {
+    // Respond with error if no device is connected and no connect request was made
+    if connection_data.get_device_count() == 0 && payload.cmd != "connect" {
         respond(get_err("No connected device found"), &mut write_stream).await;
         return;
     }
 
     let req_dev_addr = payload.device.clone().unwrap_or_default();
-    let device_addr = match connection_data.get_device_address(&req_dev_addr) {
+    let device_addr = match connection_data
+        .get_device_address(&req_dev_addr, &config)
+        .await
+    {
         Some(addr) => addr,
         None => {
             respond(get_err("Device not found"), &mut write_stream).await;
@@ -87,6 +90,11 @@ async fn run_payload_cmd(
             req_executor::toggle_buds_value(&payload, &mut device).await
         }
         "set_config" => req_executor::set_config_value(&payload, device_addr.clone(), config).await,
+        "disconnect" | "connect" => {
+            req_executor::change_connection_status(device_addr.clone(), payload.cmd == "connect")
+                .await
+        }
+
         _ => return None,
     })
 }

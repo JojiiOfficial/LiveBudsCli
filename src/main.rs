@@ -111,6 +111,14 @@ fn run_subcommands(clap: ArgMatches) {
             cmd::config_set::set(&mut socket_client, set);
         }
     }
+
+    if let Some(subcommand) = clap.subcommand_matches("disconnect") {
+        cmd::connection::disconnect(&mut socket_client, subcommand);
+    }
+
+    if let Some(subcommand) = clap.subcommand_matches("connect") {
+        cmd::connection::connect(&mut socket_client, subcommand);
+    }
 }
 
 fn generate_completions(generator: &str) {

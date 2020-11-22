@@ -120,4 +120,16 @@ pub fn build() -> App<'static> {
                         .arg(Arg::new("value").required(true).takes_value(true)),
                 ),
         )
+        // Connect
+        .subcommand(
+            App::new("connect")
+                .about("Connect your earbuds")
+                .setting(AppSettings::ColoredHelp),
+        )
+        // Disconnect
+        .subcommand(
+            App::new("disconnect")
+                .about("Disconnect your earbuds")
+                .setting(AppSettings::ColoredHelp),
+        )
 }

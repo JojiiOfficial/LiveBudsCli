@@ -53,6 +53,16 @@ pub fn new_status_request(device: Option<String>) -> Request {
     Request::new("get_status".to_owned(), device)
 }
 
+// Create new connect request
+pub fn new_connect_request(device: Option<String>) -> Request {
+    Request::new("connect".to_owned(), device)
+}
+
+// Create new disconnect request
+pub fn new_disconnect_request(device: Option<String>) -> Request {
+    Request::new("disconnect".to_owned(), device)
+}
+
 // Create new set_value request
 pub fn new_set_value_request(
     device: Option<String>,

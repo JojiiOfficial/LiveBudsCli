@@ -99,8 +99,19 @@ impl ConnectionData {
     }
 
     // Get the full address of a device
-    pub fn get_device_address(&self, addr: &str) -> Option<String> {
+    pub async fn get_device_address(
+        &self,
+        addr: &str,
+        config: &Arc<Mutex<Config>>,
+    ) -> Option<String> {
         if addr.is_empty() {
+            if self.get_device_count() == 0 {
+                if let Some(dev) = config.lock().await.get_default_device() {
+                    return Some(dev.address.clone());
+                } else {
+                    return None;
+                }
+            }
             return self.get_first_device().map(|i| i.inner.address.clone());
         }
 
