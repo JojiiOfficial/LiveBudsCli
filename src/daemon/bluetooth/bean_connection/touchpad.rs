@@ -1,3 +1,5 @@
+#![allow(unused_variables)]
+
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::bt_connection_listener::BudsConnection;
 

@@ -1,173 +1,36 @@
+mod cli;
 mod cmd;
 mod daemon;
+mod daemon_utils;
 
-use cmd::socket_client::SocketClient;
-
-use clap::{crate_version, App, AppSettings, Arg, ValueHint};
+use clap::{App, ArgMatches};
 use clap_generate::{
     generate,
     generators::{Bash, Elvish, Fish, PowerShell, Zsh},
     Generator,
 };
+use cmd::socket_client::SocketClient;
 
-use std::env;
-use std::path::Path;
-use std::process::{exit, Command, Stdio};
+use std::process::exit;
 
-const DAEMON_PATH: &str = "/tmp/livebuds.sock";
-
-fn build_cli() -> App<'static> {
-    App::new("earbuds")
-        .setting(AppSettings::TrailingVarArg)
-        .setting(AppSettings::ColoredHelp)
-        .setting(AppSettings::ArgRequiredElseHelp)
-        .version(crate_version!())
-        .author("Jojii S")
-        .about("Control your Galaxy Buds live from cli")
-        .arg(
-            Arg::new("output")
-                .short('o')
-                .long("output")
-                .global(true)
-                .possible_values(&["json", "normal"]),
-        )
-        .arg(
-            Arg::new("generator")
-                .long("generate")
-                .about("Generate completion scripts for a given type of shell")
-                .possible_values(&["bash", "elvish", "fish", "powershell", "zsh"]),
-        )
-        .arg(
-            Arg::new("daemon")
-                .about("Starts the daemon")
-                .long("daemon")
-                .short('d'),
-        )
-        .arg(
-            Arg::new("no-fork")
-                .about("Don't fork the daemon")
-                .long("no-fork"),
-        )
-        .arg(
-            Arg::new("kill-daemon")
-                .about("Kill the daemon. If used together with -d, the daemon will get restarted")
-                .short('k')
-                .long("kill-daemon"),
-        )
-        .arg(
-            Arg::new("quiet")
-                .about("Don't print extra output")
-                .short('q')
-                .global(true)
-                .long("quiet"),
-        )
-        .arg(
-            Arg::new("device")
-                .global(true)
-                .about("Specify the device to use")
-                .short('s')
-                .takes_value(true)
-                .value_hint(ValueHint::Unknown)
-                .long("device"),
-        )
-        .subcommand(
-            App::new("status")
-                .setting(AppSettings::ColoredHelp)
-                .alias("info")
-                .about("Display informations for a given device"),
-        )
-        .subcommand(
-            App::new("set")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .about("Turn on/off features and control the equalizer setting")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&[
-                            "equalizer",
-                            "anc",
-                            "touchpadlock",
-                            "touchpad",
-                            "tap-action",
-                        ]),
-                )
-                .arg(Arg::new("value").required(true).takes_value(true))
-                .arg(
-                    Arg::new("opt")
-                        .about("Provide additional input for some keys")
-                        .takes_value(true),
-                ),
-        )
-        .subcommand(
-            App::new("toggle")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .about("Toggle the state of a feature")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&["anc", "touchpadlock"]),
-                ),
-        )
-        .subcommand(
-            App::new("config")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .about("Interact with the buds configuration")
-                .subcommand(
-                    App::new("set")
-                        .setting(AppSettings::ArgRequiredElseHelp)
-                        .setting(AppSettings::ColoredHelp)
-                        .about("Set a config value")
-                        .arg(
-                            Arg::new("key")
-                                .required(true)
-                                .takes_value(true)
-                                .possible_values(&[
-                                    "auto-pause",
-                                    "auto-play",
-                                    "low-battery-notification",
-                                    "smart-sink",
-                                ]),
-                        )
-                        .arg(Arg::new("value").required(true).takes_value(true)),
-                ),
-        )
-}
+const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 
 #[async_std::main]
 async fn main() {
-    let clap = build_cli().get_matches();
+    let clap = cli::build().get_matches();
 
     let kill_daemon = clap.is_present("kill-daemon");
     let quiet = clap.is_present("quiet");
 
-    if kill_daemon && check_daemon_running(DAEMON_PATH.to_owned()).is_err() {
-        let pids = ofiles::opath(DAEMON_PATH);
-        if let Ok(pids) = pids {
-            let u: u32 = (*pids.get(0).unwrap()).into();
-            if let Err(err) = nix::sys::signal::kill(
-                nix::unistd::Pid::from_raw(u as i32),
-                nix::sys::signal::SIGTERM,
-            ) {
-                eprintln!("Error killing process: {:?}", err);
-                exit(1);
-            } else if !quiet {
-                println!("Daemon exited!");
-            }
-
-            // Hacky way not to display annoying cargo warnings
-            try_delete_socket(DAEMON_PATH).unwrap_or_default();
-        }
+    // Kill daemon if desired and running
+    if kill_daemon && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err() {
+        daemon_utils::kill(quiet, DAEMON_PATH);
     }
 
-    // run only the daemon if desired
+    // Run daemon on -k
     if clap.is_present("daemon") {
         // Check if a daemon is already running
-        if let Err(err) = check_daemon_running(DAEMON_PATH) {
+        if let Err(err) = daemon_utils::check_running(DAEMON_PATH) {
             // Don't print error output if -q is passed
             if !quiet {
                 eprintln!("{}", err);
@@ -175,21 +38,21 @@ async fn main() {
             exit(1);
         }
 
-        // If no-fork is provided, keep daemon blocking
+        // Block if --no-fork is provided
         if clap.is_present("no-fork") {
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
-        }
-
-        // run the daemon in the background
-        if start_background_daemon() && !quiet {
+        } else
+        // Start daemon detached
+        if daemon_utils::start() && !quiet {
             println!("Daemon started successfully")
         }
+
         return;
     }
 
-    // Late return to allow the daemon to
-    // get restarted as well
+    // Late return to allow a
+    // combination of -k and -d
     if kill_daemon {
         return;
     }
@@ -201,8 +64,8 @@ async fn main() {
     }
 
     // From here we need a running daemon, so ensure one is running
-    if check_daemon_running(DAEMON_PATH.to_owned()).is_ok() {
-        if !start_background_daemon() {
+    if daemon_utils::check_running(DAEMON_PATH.to_owned()).is_ok() {
+        if !daemon_utils::start() {
             exit(1);
         } else {
             if !quiet {
@@ -210,10 +73,14 @@ async fn main() {
             }
 
             // TODO wait for deamon to be ready
-            std::thread::sleep(std::time::Duration::from_millis(250));
+            std::thread::sleep(std::time::Duration::from_millis(350));
         }
     }
 
+    run_subcommands(clap);
+}
+
+fn run_subcommands(clap: ArgMatches) {
     // Create a new daemon connection client
     let mut socket_client = match SocketClient::new(&DAEMON_PATH) {
         Ok(v) => v,
@@ -247,7 +114,7 @@ async fn main() {
 }
 
 fn generate_completions(generator: &str) {
-    let mut app = build_cli();
+    let mut app = cli::build();
     match generator {
         "bash" => print_completions::<Bash>(&mut app),
         "elvish" => print_completions::<Elvish>(&mut app),
@@ -260,54 +127,4 @@ fn generate_completions(generator: &str) {
 
 fn print_completions<G: Generator>(app: &mut App) {
     generate::<G, _>(app, app.get_name().to_string(), &mut std::io::stdout());
-}
-
-/// Start the daemon detached from the current cli
-fn start_background_daemon() -> bool {
-    let curr_exe = env::current_exe().expect("Couldn't get current executable!");
-    let mut cmd = Command::new("nohup");
-    let cmd = cmd.arg(curr_exe).arg("-d").arg("--no-fork").arg("-q");
-    cmd.stdout(Stdio::null());
-    cmd.stderr(Stdio::null());
-    let status = cmd.spawn();
-    status.is_ok()
-}
-
-/// Try to delete the socket file
-fn try_delete_socket<P: AsRef<Path>>(p: P) -> Result<(), String> {
-    std::fs::remove_file(p.as_ref()).map_err(|e| {
-        format!(
-            "Can't delete old socket file {}: {:?}",
-            p.as_ref().display(),
-            e
-        )
-    })?;
-    Ok(())
-}
-
-// Returns an error with a huam friendly message if a daemon is already running
-pub fn check_daemon_running<P: AsRef<Path>>(p: P) -> Result<(), String> {
-    let p = p.as_ref();
-
-    if !p.exists() {
-        return Ok(());
-    }
-
-    // Check if the socket file is used by a running program
-    if let Ok(files) = ofiles::opath(&p) {
-        if files.is_empty() {
-            try_delete_socket(p)?;
-        }
-
-        return Err(format!(
-            "A daemon is already running: {}",
-            files
-                .into_iter()
-                .map(|i| format!("{:?} ", i))
-                .collect::<String>()
-        ));
-    }
-
-    try_delete_socket(p)?;
-    Ok(())
 }
