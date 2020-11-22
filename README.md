@@ -12,13 +12,14 @@ A cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-
 - [x] Buds status (battery, anc, current equalizer setting, ...)
 - [x] Auto music play/pause on bud remove (via mpris)
 - [x] Desktop notification for low battery
+- [x] Connect/Disconnect your earbuds easily with a subcommand
 - [x] Multiple device support
 - [x] Individual device configs
-- [x] Json output for scripts (via `jq`)
+- [x] Automatic sink switch (pulseaudio) [feature: `pulse-sink`, used by default]
 - [x] Bash completion (for every shell)
 - [x] Change touchpad tap action
 - [x] Change config options from cli
-- [x] Automatic sink switch (pulseaudio) [feature: `pulse-sink`, used by default]
+- [x] Json output for scripts (via `jq`)
 
 # Install
 
@@ -80,6 +81,11 @@ earbuds status -o json
 Set the left touchpad tap command to spotify
 ```
 earbuds set tap-action spotify left
+```
+
+Connect/Disconnect:
+```
+earbuds connect/disconnect
 ```
 
 To debug the daemon run:
