@@ -28,7 +28,14 @@ impl Config {
 
         let config;
 
-        if !config_file.exists().await {
+        if !config_file.exists().await
+            // Check if file is empty
+            || fs::metadata(&config_file)
+                .await
+                .and_then(|i| Ok(i.len()))
+                .unwrap_or(1)
+                == 0
+        {
             config = Self::default();
             config.save().await?;
         } else {
@@ -130,6 +137,11 @@ impl Config {
         None
     }
 
+    /// Return defaut device if available
+    pub fn get_default_device(&self) -> Option<&BudsConfig> {
+        self.buds_settings.iter().find(|i| i.is_default())
+    }
+
     /// Set the config of a specific device. If the config
     /// entry does not exist yet, it will be added
     pub async fn set_device_config(&mut self, config: BudsConfig) -> Result<(), String> {
@@ -137,6 +149,12 @@ impl Config {
             let pos = self.get_device_config_pos(config.address.as_str()).unwrap();
             self.buds_settings[pos] = config;
         } else {
+            // Set device = default if no other devices found
+            let mut config = config;
+            if self.buds_settings.len() == 0 {
+                config.default = Some(true);
+            }
+
             self.buds_settings.push(config);
         }
 

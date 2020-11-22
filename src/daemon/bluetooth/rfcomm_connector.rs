@@ -157,11 +157,13 @@ pub async fn run(
         connection_handler.add_device(i.to_owned());
 
         // Set default config for (apparently) new device
-        let mut cfg = config.lock().await;
-        if !cfg.has_device_config(&i) {
-            cfg.set_device_config(BudsConfig::new(i.clone()))
-                .await
-                .unwrap();
+        {
+            let mut cfg = config.lock().await;
+            if !cfg.has_device_config(&i) {
+                cfg.set_device_config(BudsConfig::new(i.clone()))
+                    .await
+                    .unwrap();
+            }
         }
 
         // Create a new buds connection task
