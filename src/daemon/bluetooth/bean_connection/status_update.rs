@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use super::super::super::buds_config::{BudsConfig, Config};
 use super::super::super::buds_info::BudsInfo;
 use super::super::bt_connection_listener::BudsConnection;
@@ -20,7 +22,10 @@ pub async fn handle(
     let mut cfg = config.lock().await;
 
     // Load the (possibly changed) config values
-    cfg.load().await.unwrap();
+    if let Err(err) = cfg.load().await {
+        eprintln!("{}", err);
+        exit(1);
+    }
 
     // Check if current device has a config entry
     if let Some(config) = cfg.get_device_config(&connection.addr) {

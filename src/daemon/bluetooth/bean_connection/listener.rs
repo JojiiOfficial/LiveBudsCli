@@ -6,7 +6,7 @@ use async_std::io::prelude::*;
 use async_std::sync::Mutex;
 use galaxy_buds_live_rs::message::{ids, Message};
 
-use std::sync::Arc;
+use std::{process::exit, sync::Arc};
 
 /// Read buds data
 pub async fn start_listen(
@@ -16,6 +16,15 @@ pub async fn start_listen(
 ) {
     let mut stream = connection.socket.get_stream();
     let mut buffer = [0; 2048];
+
+    // Check config
+    {
+        let mut cfg = config.lock().await;
+        if let Err(err) = cfg.load().await {
+            eprintln!("{}", err);
+            exit(1);
+        }
+    }
 
     loop {
         let bytes_read = match stream.read(&mut buffer[..]).await {

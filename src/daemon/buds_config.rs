@@ -13,6 +13,7 @@ pub struct Config {
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct BudsConfig {
     pub address: String,
+    pub default: Option<bool>,
     pub low_battery_notification: Option<bool>,
     pub auto_resume_music: Option<bool>,
     pub auto_pause_music: Option<bool>,
@@ -65,6 +66,32 @@ impl Config {
             .map_err(|e| e.to_string())?;
         *self = toml::from_str(&conf_data).map_err(|e| e.to_string())?;
 
+        self.check_config()
+    }
+
+    // Check the validity of the config file
+    pub fn check_config(&self) -> Result<(), String> {
+        // Check if more than one device is set to default
+        if self.buds_settings.iter().filter(|i| i.is_default()).count() > 1 {
+            return Err("More than one device is set to default".to_string());
+        }
+
+        // Check if a device is configured more than once
+        for device in self.buds_settings.iter() {
+            if self
+                .buds_settings
+                .iter()
+                .filter(|i| i.address == device.address)
+                .count()
+                > 1
+            {
+                return Err(format!(
+                    "Device {} is configured more than one time!",
+                    device.address
+                ));
+            }
+        }
+
         Ok(())
     }
 
@@ -78,7 +105,7 @@ impl Config {
         None
     }
 
-    /// Get configuration for a given device
+    /// Get configuration for a given device mutable
     pub fn get_device_config_mut(&mut self, address: &str) -> Option<&mut BudsConfig> {
         for elem in &mut self.buds_settings {
             if elem.address.as_str() == address {
@@ -165,5 +192,9 @@ impl BudsConfig {
 
     pub fn smart_sink(&self) -> bool {
         self.smart_sink.unwrap_or(false)
+    }
+
+    pub fn is_default(&self) -> bool {
+        self.default.unwrap_or(false)
     }
 }
