@@ -42,6 +42,7 @@ pub async fn handle(
 
         // Fallback to next available sink if buds
         // get placed into the case
+        #[cfg(feature = "pulse-sink")]
         if config.smart_sink() {
             sink::fallback_to_sink(info, &update);
         }

@@ -2,7 +2,6 @@ use super::utils;
 use crate::daemon::buds_info::BudsInfo;
 
 use galaxy_buds_live_rs::message::status_updated::StatusUpdate;
-use utils::is_placed_state;
 
 #[cfg(feature = "pulse-sink")]
 use pulsectl::controllers::{types::DeviceInfo, DeviceControl, SinkController};
@@ -56,8 +55,8 @@ pub fn is_default(handler: &mut SinkController, info: &BudsInfo) -> Option<bool>
 // Change the default output sink to fallback if buds are placed into the case
 #[cfg(feature = "pulse-sink")]
 pub fn fallback_to_sink(info: &mut BudsInfo, update: &StatusUpdate) -> Option<()> {
-    let was_in_case = is_placed_state(info.inner.placement_left, info.inner.placement_right);
-    let is_in_case = is_placed_state(update.placement_left, update.placement_right);
+    let was_in_case = utils::is_placed_state(info.inner.placement_left, info.inner.placement_right);
+    let is_in_case = utils::is_placed_state(update.placement_left, update.placement_right);
 
     let mut handler = SinkController::create();
 
