@@ -19,12 +19,11 @@ const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 async fn main() {
     let clap = cli::build().get_matches();
 
-    let kill_daemon = clap.is_present("kill-daemon");
-    let quiet = clap.is_present("quiet");
-
     // Kill daemon if desired and running
-    if kill_daemon && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err() {
-        daemon_utils::kill(quiet, DAEMON_PATH);
+    if clap.is_present("kill-daemon")
+        && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err()
+    {
+        daemon_utils::kill(clap.is_present("kill-daemon"), DAEMON_PATH);
     }
 
     // Run daemon on -k
@@ -32,7 +31,7 @@ async fn main() {
         // Check if a daemon is already running
         if let Err(err) = daemon_utils::check_running(DAEMON_PATH) {
             // Don't print error output if -q is passed
-            if !quiet {
+            if !clap.is_present("quiet") {
                 eprintln!("{}", err);
             }
             exit(1);
@@ -40,11 +39,12 @@ async fn main() {
 
         // Block if --no-fork is provided
         if clap.is_present("no-fork") {
+            std::mem::drop(clap);
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
         } else
         // Start daemon detached
-        if daemon_utils::start() && !quiet {
+        if daemon_utils::start() && !clap.is_present("quiet") {
             println!("Daemon started successfully")
         }
 
@@ -53,7 +53,7 @@ async fn main() {
 
     // Late return to allow a
     // combination of -k and -d
-    if kill_daemon {
+    if clap.is_present("kill-daemon") {
         return;
     }
 
@@ -68,7 +68,7 @@ async fn main() {
         if !daemon_utils::start() {
             exit(1);
         } else {
-            if !quiet {
+            if !clap.is_present("quiet") {
                 println!("Daemon started successfully")
             }
 

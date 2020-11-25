@@ -8,6 +8,8 @@ use galaxy_buds_live_rs::message::{ids, Message};
 
 use std::{process::exit, sync::Arc};
 
+const BUFF_SIZE: usize = 1024;
+
 /// Read buds data
 pub async fn start_listen(
     connection: BudsConnection,
@@ -15,7 +17,7 @@ pub async fn start_listen(
     ch: Arc<Mutex<ConnHandler>>,
 ) {
     let mut stream = connection.socket.get_stream();
-    let mut buffer = [0; 2048];
+    let mut buffer: Vec<u8> = Vec::with_capacity(BUFF_SIZE);
 
     // Check config
     {
@@ -27,7 +29,11 @@ pub async fn start_listen(
     }
 
     loop {
-        let bytes_read = match stream.read(&mut buffer[..]).await {
+        for _ in 0..BUFF_SIZE {
+            buffer.push(0);
+        }
+
+        let bytes_read = match stream.read(&mut buffer).await {
             Ok(v) => v,
             Err(_) => {
                 let mut c = ch.lock().await;

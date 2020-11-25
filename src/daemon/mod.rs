@@ -11,8 +11,6 @@ use std::sync::{mpsc, Arc};
 
 /// Starts the complete daemon
 pub async fn run_daemon(p: String) {
-    daemonize_self(); // Put into background
-
     // Exchange connection events between bluetooth and connection handler
     let (conn_tx, conn_rx) = mpsc::channel::<String>();
 
@@ -43,5 +41,3 @@ pub async fn run_daemon(p: String) {
     // Run bluetooth listener
     bluetooth::bt_connection_listener::run(conn_tx).await;
 }
-
-fn daemonize_self() {}
