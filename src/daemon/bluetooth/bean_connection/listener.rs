@@ -8,7 +8,7 @@ use galaxy_buds_live_rs::message::{ids, Message};
 
 use std::{process::exit, sync::Arc};
 
-const BUFF_SIZE: usize = 1024;
+const BUFF_SIZE: usize = 2048;
 
 /// Read buds data
 pub async fn start_listen(

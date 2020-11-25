@@ -22,6 +22,10 @@ pub fn try_play() -> bool {
         .is_some()
 }
 
+pub fn is_placed_state(left: Placement, right: Placement) -> bool {
+    left == Placement::InOpenCase && right == Placement::InOpenCase
+}
+
 pub fn is_some_wearing_state(left: Placement, right: Placement) -> bool {
     left == Placement::Ear || right == Placement::Ear
 }
