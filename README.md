@@ -68,6 +68,11 @@ Set equalizer to Bass boost
 earbuds set equalizer bass
 ```
 
+Enable ANC
+```
+earbuds enable anc
+```
+
 Toggle noise reduction or the touchpad lock
 ```
 earbuds toggle anc/touchpad
