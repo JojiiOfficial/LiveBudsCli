@@ -6,8 +6,7 @@ use clap::ArgMatches;
 use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType, TouchpadOption};
 
 /// Set a value
-pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool) {
-    let value = app.value_of("value").unwrap_or_default();
+pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
     let skey = app.value_of("key").unwrap();
     let key = match Key::parse(skey) {
         Some(k) => k,

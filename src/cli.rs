@@ -85,6 +85,30 @@ pub fn build() -> App<'static> {
                 ),
         )
         .subcommand(
+            App::new("enable")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::ColoredHelp)
+                .about("Turn off a given features")
+                .arg(
+                    Arg::new("key")
+                        .required(true)
+                        .takes_value(true)
+                        .possible_values(&["anc", "touchpad"]),
+                ),
+        )
+        .subcommand(
+            App::new("disable")
+                .setting(AppSettings::ArgRequiredElseHelp)
+                .setting(AppSettings::ColoredHelp)
+                .about("Turn off a given features")
+                .arg(
+                    Arg::new("key")
+                        .required(true)
+                        .takes_value(true)
+                        .possible_values(&["equalizer", "anc", "touchpad"]),
+                ),
+        )
+        .subcommand(
             App::new("toggle")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)

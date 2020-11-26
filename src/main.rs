@@ -97,12 +97,32 @@ fn run_subcommands(clap: ArgMatches) {
 
     // Run set command
     if let Some(subcommand) = clap.subcommand_matches("set") {
-        cmd::value::set(&mut socket_client, subcommand, false);
+        cmd::value::set(
+            &mut socket_client,
+            subcommand,
+            false,
+            subcommand.value_of("value").unwrap_or_default(),
+        );
+    }
+
+    // Run disable command
+    if let Some(subcommand) = clap.subcommand_matches("disable") {
+        cmd::value::set(&mut socket_client, subcommand, true, "off");
+    }
+
+    // Run enable command
+    if let Some(subcommand) = clap.subcommand_matches("enable") {
+        cmd::value::set(&mut socket_client, subcommand, true, "on");
     }
 
     // Run toggle command
     if let Some(subcommand) = clap.subcommand_matches("toggle") {
-        cmd::value::set(&mut socket_client, subcommand, true);
+        cmd::value::set(
+            &mut socket_client,
+            subcommand,
+            true,
+            subcommand.value_of("value").unwrap_or_default(),
+        );
     }
 
     // Run toggle command
