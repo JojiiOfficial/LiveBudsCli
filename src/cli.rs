@@ -93,7 +93,7 @@ pub fn build() -> App<'static> {
                     Arg::new("key")
                         .required(true)
                         .takes_value(true)
-                        .possible_values(&["anc", "touchpadlock"]),
+                        .possible_values(&["anc", "touchpadlock", "touchpad"]),
                 ),
         )
         .subcommand(
