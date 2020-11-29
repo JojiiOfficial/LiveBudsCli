@@ -73,7 +73,7 @@ async fn main() {
             }
 
             // TODO wait for deamon to be ready
-            std::thread::sleep(std::time::Duration::from_millis(450));
+            std::thread::sleep(std::time::Duration::from_millis(800));
         }
     }
 
