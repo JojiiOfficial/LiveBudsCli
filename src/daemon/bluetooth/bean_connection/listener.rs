@@ -45,6 +45,12 @@ pub async fn start_listen(
         // The received message from the buds
         let message = Message::new(&buffer[0..bytes_read]);
 
+        // validate crc checksum
+        if !message.check_crc() {
+            println!("WARNING: CRC failed. Skipping message");
+            continue;
+        }
+
         let connection_handler = ch.lock().await;
         let mut lock = connection_handler.connection_data.lock().await;
 
