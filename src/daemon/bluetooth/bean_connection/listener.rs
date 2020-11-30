@@ -29,6 +29,7 @@ pub async fn start_listen(
     }
 
     loop {
+        buffer.clear();
         for _ in 0..BUFF_SIZE {
             buffer.push(0);
         }
@@ -67,7 +68,6 @@ pub async fn start_listen(
             ids::STATUS_UPDATED => {
                 status_update::handle(message.into(), info, &config, &connection).await
             }
-
             ids::EXTENDED_STATUS_UPDATED => {
                 extended_status_update::handle(message.into(), info);
             }
