@@ -1,7 +1,9 @@
+use std::time::SystemTime;
+
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
-use galaxy_buds_live_rs::message;
 use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement, TouchpadOption};
+use galaxy_buds_live_rs::message::{self, debug};
 use serde_derive::{Deserialize, Serialize};
 
 /// Informations about a connected pair
@@ -9,6 +11,17 @@ use serde_derive::{Deserialize, Serialize};
 pub struct BudsInfo {
     pub stream: UnixStream,
     pub inner: BudsInfoInner,
+    pub last_debug: SystemTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct DebugInfo {
+    pub voltage_left: f32,
+    pub voltage_right: f32,
+    pub temperature_left: f32,
+    pub temperature_right: f32,
+    pub current_left: f64,
+    pub current_right: f64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -32,6 +45,7 @@ pub struct BudsInfoInner {
     #[serde(with = "touchpad_option_dser")]
     pub touchpad_option_right: TouchpadOption,
     pub paused_music_earlier: bool,
+    pub debug: DebugInfo,
 }
 
 impl BudsInfo {
@@ -53,7 +67,9 @@ impl BudsInfo {
                 touchpad_option_left: TouchpadOption::Undetected,
                 touchpad_option_right: TouchpadOption::Undetected,
                 paused_music_earlier: false,
+                debug: DebugInfo::default(),
             },
+            last_debug: SystemTime::now(),
         }
     }
 
@@ -68,6 +84,11 @@ impl BudsInfo {
         }
 
         Ok(())
+    }
+
+    pub async fn request_debug_data(&mut self) -> Result<(), String> {
+        self.last_debug = SystemTime::now();
+        self.send(debug::new(debug::DebugVariant::GetAllData)).await
     }
 }
 

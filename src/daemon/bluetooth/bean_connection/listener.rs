@@ -1,6 +1,6 @@
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
-use super::{extended_status_update, status_update, touchpad};
+use super::{extended_status_update, get_all_data, status_update, touchpad};
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
@@ -27,6 +27,8 @@ pub async fn start_listen(
             exit(1);
         }
     }
+
+    let mut requested_debug = false;
 
     loop {
         buffer.clear();
@@ -68,11 +70,29 @@ pub async fn start_listen(
             ids::STATUS_UPDATED => {
                 status_update::handle(message.into(), info, &config, &connection).await
             }
+
             ids::EXTENDED_STATUS_UPDATED => {
                 extended_status_update::handle(message.into(), info);
             }
 
-            _ => continue,
+            ids::DEBUG_GET_ALL_DATA => {
+                get_all_data::handle(message.into(), info);
+            }
+
+            _ => (),
         };
+
+        // Send debug request at an approprieate interval
+        if (requested_debug && info.last_debug.elapsed().unwrap_or_default().as_secs() >= 8)
+            || !requested_debug
+        {
+            if let Err(err) = info.request_debug_data().await {
+                println!("Error sending debug request {:?}", err);
+            }
+        }
+
+        if !requested_debug {
+            requested_debug = true;
+        }
     }
 }
