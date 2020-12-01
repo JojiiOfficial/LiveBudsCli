@@ -9,6 +9,13 @@ pub fn build() -> App<'static> {
         .author("Jojii S")
         .about("Control your Galaxy Buds live from cli")
         .arg(
+            Arg::new("verbose")
+                .short('v')
+                .long("verbose")
+                .global(true)
+                .about("Prints informations verbosely"),
+        )
+        .arg(
             Arg::new("output")
                 .short('o')
                 .long("output")

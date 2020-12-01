@@ -58,6 +58,34 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
     });
     println!("Left option:\t{:?}", res.touchpad_option_left);
     println!("Right option:\t{:?}", res.touchpad_option_right);
+
+    println!(
+        "Temp. left:\t{:?}°C",
+        (res.debug.temperature_left * 100_f32).floor() / 100_f32
+    );
+    println!(
+        "Temp. right:\t{:?}°C",
+        (res.debug.temperature_right * 100_f32).floor() / 100_f32
+    );
+
+    if app.is_present("verbose") {
+        println!(
+            "Current left:\t{:?}mA",
+            (res.debug.current_left * 10000_f64).floor()
+        );
+        println!(
+            "Current right:\t{:?}mA",
+            (res.debug.current_right * 10000_f64).floor()
+        );
+        println!(
+            "Volt left:\t{:?}V",
+            (res.debug.voltage_left * 100_f32).floor() / 100_f32
+        );
+        println!(
+            "Volt right:\t{:?}V",
+            (res.debug.voltage_right * 100_f32).floor() / 100_f32
+        );
+    }
 }
 
 fn get_bt_device_name<S: AsRef<str>>(dev_addr: S) -> Option<String> {
