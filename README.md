@@ -7,7 +7,17 @@
 # LiveBudsCli
 A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live)
 
-![status](.imgs/status.png)
+<table>
+<tr>
+    <td>
+        <img src=".imgs/status.png" width="auto" height="auto"/>
+    </td>
+    <td>
+        <img src=".imgs/status_extended.png" width="auto" height="auto"/>
+    </td>
+</tr>
+</table>
+<br>
 
 
 # Features
