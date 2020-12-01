@@ -12,7 +12,8 @@ A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mo
 
 # Features
 - [x] Equalizer, touchpad-lock and anc control
-- [x] Buds status (battery, anc, current equalizer setting, ...)
+- [x] Basic Buds status (battery, anc, current equalizer setting, ...)
+- [x] Advanced status informations (battery voltage/current, temperature)
 - [x] Auto music play/pause on bud remove (via mpris)
 - [x] Desktop notification for low battery
 - [x] Connect/Disconnect your earbuds easily with a subcommand
