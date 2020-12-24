@@ -45,6 +45,11 @@ You can get it precompiled from my [pacman repository](https://repo.jojii.de)
 `yay -S earbuds`
 
 ## Compilation
+#### Requirements (make depends)
+Arch: bluez-libs libpulse dbus <br>
+Fedora: dbus-devel bluez-libs-devel
+<br>
+
 Run following command:
 ```
 cargo install earbuds
