@@ -1211,9 +1211,9 @@ dependencies = [
 
 [[package]]
 name = "rust-pulsectl-fork"
-version = "0.2.7"
+version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d91569adb839e25818182e2d09953ccf5f59a73e2288acc87ad49f0f89016cb1"
+checksum = "d2578aaca7ad619a513f1b0091743f97780c494b5d7909865bee217e306e1629"
 dependencies = [
  "libpulse-binding",
 ]
