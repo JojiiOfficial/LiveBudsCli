@@ -1,6 +1,6 @@
 use clap::{crate_version, App, AppSettings, Arg, ValueHint};
 
-pub fn build() -> App<'static> {
+pub fn build<'a>(_s: &str) -> App<'a> {
     App::new("earbuds")
         .setting(AppSettings::TrailingVarArg)
         .setting(AppSettings::ColoredHelp)

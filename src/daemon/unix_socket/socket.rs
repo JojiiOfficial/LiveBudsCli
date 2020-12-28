@@ -12,7 +12,6 @@ pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>, config: A
     let mut incoming = listener.incoming();
 
     loop {
-        println!("socket loop");
         while let Some(stream) = incoming.next().await {
             async_std::task::spawn(connection_handler::handle_client(
                 stream.unwrap(),

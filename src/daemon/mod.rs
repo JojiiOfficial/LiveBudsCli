@@ -7,7 +7,10 @@ pub mod utils;
 use async_std::sync::Mutex;
 use bluetooth::rfcomm_connector::ConnectionData;
 
-use std::sync::{mpsc, Arc};
+use std::{
+    sync::{mpsc, Arc},
+    thread,
+};
 
 use self::bluetooth::rfcomm_connector::ConnectionEventData;
 
@@ -20,11 +23,18 @@ pub async fn run_daemon(p: String) {
     let connection_data = Arc::new(Mutex::new(ConnectionData::new()));
 
     // Config setup
-    let config = buds_config::Config::new()
-        .await
-        .expect("Couldn't read config");
+    let config = Arc::new(Mutex::new(
+        buds_config::Config::new()
+            .await
+            .expect("Couldn't read config"),
+    ));
 
-    let config = Arc::new(Mutex::new(config));
+    // Run Unix socket listener
+    async_std::task::spawn(unix_socket::socket::run(
+        p,
+        Arc::clone(&connection_data),
+        Arc::clone(&config),
+    ));
 
     // Run connection handler
     async_std::task::spawn(bluetooth::rfcomm_connector::run(
@@ -33,13 +43,13 @@ pub async fn run_daemon(p: String) {
         Arc::clone(&config),
     ));
 
-    // Run unix socket
-    async_std::task::spawn(unix_socket::socket::run(
-        p,
-        Arc::clone(&connection_data),
-        Arc::clone(&config),
-    ));
-
     // Run bluetooth listener
-    bluetooth::bt_connection_listener::run(conn_tx).await;
+    thread::Builder::new()
+        .stack_size(3 * 1024 * 1024)
+        .spawn(|| {
+            bluetooth::bt_connection_listener::run(conn_tx);
+        })
+        .expect("can't spawn thread")
+        .join()
+        .expect("Thread spawning failed");
 }

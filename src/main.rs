@@ -17,7 +17,10 @@ const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 
 #[async_std::main]
 async fn main() {
-    let clap = cli::build().get_matches();
+    let clap = {
+        let s = "";
+        cli::build(&s).get_matches()
+    };
 
     // Kill daemon if desired and running
     if clap.is_present("kill-daemon")
@@ -36,32 +39,27 @@ async fn main() {
             }
             exit(1);
         }
-
         // Block if --no-fork is provided
         if clap.is_present("no-fork") {
-            std::mem::drop(clap);
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
-        } else if daemon_utils::start() && !clap.is_present("quiet") {
-            // Start daemon detached
+        } else
+        // Start daemon detached
+        if daemon_utils::start() && !clap.is_present("quiet") {
             println!("Daemon started successfully")
         }
-
         return;
     }
-
     // Late return to allow a
     // combination of -k and -d
     if clap.is_present("kill-daemon") {
         return;
     }
-
     // Run generator command if desired
     if let Some(generator) = clap.value_of("generator") {
         generate_completions(generator);
         return;
     }
-
     // From here we need a running daemon, so ensure one is running
     if daemon_utils::check_running(DAEMON_PATH.to_owned()).is_ok() {
         if !daemon_utils::start() {
@@ -70,12 +68,10 @@ async fn main() {
             if !clap.is_present("quiet") {
                 println!("Daemon started successfully")
             }
-
             // TODO wait for deamon to be ready
             std::thread::sleep(std::time::Duration::from_millis(800));
         }
     }
-
     run_subcommands(clap);
 }
 
@@ -141,7 +137,8 @@ fn run_subcommands(clap: ArgMatches) {
 }
 
 fn generate_completions(generator: &str) {
-    let mut app = cli::build();
+    let s = "";
+    let mut app = cli::build(s);
     match generator {
         "bash" => print_completions::<Bash>(&mut app),
         "elvish" => print_completions::<Elvish>(&mut app),

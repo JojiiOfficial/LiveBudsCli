@@ -149,8 +149,6 @@ pub async fn run(
     let arc_ch = Arc::new(Mutex::new(connection_handler));
 
     for i in rec {
-        println!("rec loop");
-
         let mut connection_handler = arc_ch.lock().await;
 
         // Ignore already connected devices

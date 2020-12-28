@@ -3,7 +3,6 @@
  * forwards connection events to the connector
  */
 
-use async_std::task::{self, sleep};
 use bluetooth_serial_port_async::BtSocket;
 use blurz::{
     BluetoothAdapter, BluetoothDevice,
@@ -26,13 +25,11 @@ pub struct BudsConnection {
 }
 
 /// Listens for new Bluethooth connections
-pub async fn run(sender: Sender<ConnectionEventData>) {
+pub fn run(sender: Sender<ConnectionEventData>) {
     let session = &BluetoothSession::create_session(None).unwrap();
     let mut printed_adapter_missing = false;
 
     'outer: loop {
-        println!("outer loop");
-
         let adapter = BluetoothAdapter::init(session);
         if let Err(err) = adapter {
             // Thanks blurz for implementing usable error types
@@ -41,7 +38,7 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
             // On adapter not found, wait and try to connect to it again
             // maybe the user inserted the adapter later on
             if s.contains("Bluetooth adapter not found") {
-                task::sleep(Duration::from_secs(2)).await;
+                std::thread::sleep(Duration::from_secs(2));
 
                 if !printed_adapter_missing {
                     eprintln!("Bluetooth adapter missing!");
@@ -75,14 +72,11 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
 
         // Handle all future connection events
         loop {
-            println!("inner loop");
-            sleep(Duration::from_secs(1)).await;
-            continue;
             if adapter.is_powered().is_err() {
                 continue 'outer;
             }
 
-            for event in session.incoming(1000).map(BluetoothEvent::from) {
+            for event in session.incoming(10000000).map(BluetoothEvent::from) {
                 if event.is_none() {
                     continue;
                 }
@@ -96,6 +90,7 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
                         continue;
                     }
 
+                    println!("device {:#?}", object_path);
                     check_device(&sender, &session, object_path);
                 }
             }
