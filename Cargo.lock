@@ -227,15 +227,15 @@ dependencies = [
 
 [[package]]
 name = "bluetooth-serial-port-async"
-version = "0.6.1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3be2fd0e0b00573e2fb86e1bc590e9f4874d69c268f319108aed96341aaf7e1"
+checksum = "60c2ea2fbe8638ca6c8d456000df6d77d856b18d43c2c96bdd0e338d99b599e8"
 dependencies = [
  "async-std",
  "enum_primitive",
  "libc",
  "mio",
- "nix 0.13.1",
+ "nix 0.19.1",
 ]
 
 [[package]]
@@ -904,19 +904,6 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dbdc256eaac2e3bd236d93ad999d3479ef775c863dbda3068c4006a92eec51b"
-dependencies = [
- "bitflags 1.2.1",
- "cc",
- "cfg-if 0.1.10",
- "libc",
- "void",
-]
-
-[[package]]
-name = "nix"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50e4785f2c3b7589a0d0c1dd60285e1188adac4006e8abd6dd578e1567027363"
@@ -1249,9 +1236,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.60"
+version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1500e84d27fe482ed1dc791a56eddc2f230046a040fa908c08bda1d9fb615779"
+checksum = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a"
 dependencies = [
  "itoa",
  "ryu",

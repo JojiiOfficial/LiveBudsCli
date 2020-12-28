@@ -45,7 +45,7 @@ pub async fn run_daemon(p: String) {
 
     // Run bluetooth listener
     thread::Builder::new()
-        .stack_size(3 * 1024 * 1024)
+        .stack_size(1 * 1024 * 1024)
         .spawn(|| {
             bluetooth::bt_connection_listener::run(conn_tx);
         })

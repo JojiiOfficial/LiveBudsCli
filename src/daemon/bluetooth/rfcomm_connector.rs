@@ -192,7 +192,7 @@ pub async fn run(
 pub fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, String> {
     let mut socket = BtSocket::new(BtProtocol::RFCOMM).map_err(|e| e.to_string())?;
     let address = BtAddr::from_str(addr.as_ref()).unwrap();
-    socket.connect(&address).map_err(|e| e.to_string())?;
+    socket.connect(address.clone()).map_err(|e| e.to_string())?;
     let fd = socket.get_fd();
 
     Ok(BudsConnection {
