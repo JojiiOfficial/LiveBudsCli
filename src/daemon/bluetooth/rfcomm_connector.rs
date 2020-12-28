@@ -2,6 +2,7 @@ use super::super::buds_config::{BudsConfig, Config};
 use super::super::buds_info::BudsInfo;
 use super::bean_connection;
 use super::bt_connection_listener::BudsConnection;
+use crate::model::Model;
 
 use async_std::sync::Arc;
 use async_std::sync::Mutex;
@@ -140,7 +141,7 @@ impl ConnectionData {
 
 /// run the connection handler
 pub async fn run(
-    rec: Receiver<String>,
+    rec: Receiver<ConnectionEventData>,
     cd: Arc<Mutex<ConnectionData>>,
     config: Arc<Mutex<Config>>,
 ) {
@@ -151,12 +152,12 @@ pub async fn run(
         let mut connection_handler = arc_ch.lock().await;
 
         // Ignore already connected devices
-        if connection_handler.has_device(i.as_str()) {
+        if connection_handler.has_device(i.address.as_str()) {
             continue;
         }
 
         // Connect to the RFCOMM interface of the buds
-        let connection = connect_rfcomm(i.clone());
+        let connection = connect_rfcomm(i.address.clone());
         if let Err(err) = connection {
             eprintln!("Error connecting to rfcomm: {:?}", err);
             continue;
@@ -165,13 +166,13 @@ pub async fn run(
         println!("Connected successfully to Buds live!");
 
         // Add device to the connection handler
-        connection_handler.add_device(i.to_owned());
+        connection_handler.add_device(i.address.to_owned());
 
         // Set default config for (apparently) new device
         {
             let mut cfg = config.lock().await;
-            if !cfg.has_device_config(&i) {
-                cfg.set_device_config(BudsConfig::new(i.clone()))
+            if !cfg.has_device_config(&i.address) {
+                cfg.set_device_config(BudsConfig::new(i.address.clone()))
                     .await
                     .unwrap();
             }
@@ -182,6 +183,7 @@ pub async fn run(
             connection.unwrap(),
             Arc::clone(&config),
             Arc::clone(&arc_ch),
+            i.model,
         ));
     }
 }
@@ -198,4 +200,10 @@ pub fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, String> 
         socket,
         fd,
     })
+}
+
+#[derive(Debug, Clone)]
+pub struct ConnectionEventData {
+    pub address: String,
+    pub model: Model,
 }

@@ -1,14 +1,4 @@
-use blurz::BluetoothDevice;
 use galaxy_buds_live_rs::message::bud_property::Side;
-
-/// Checks whether a device is a pair of buds live
-pub fn is_bt_device_buds_live(device: &BluetoothDevice) -> bool {
-    device
-        .get_uuids()
-        .unwrap()
-        .iter()
-        .any(|s| s.to_lowercase() == "00001101-0000-1000-8000-00805f9b34fb")
-}
 
 /// Converts a str to a boolean. All undefineable
 /// values are false

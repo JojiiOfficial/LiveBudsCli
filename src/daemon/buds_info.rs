@@ -6,6 +6,8 @@ use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement, Touch
 use galaxy_buds_live_rs::message::{self, debug};
 use serde_derive::{Deserialize, Serialize};
 
+use crate::model::Model;
+
 /// Informations about a connected pair
 /// of Galaxy Buds live
 pub struct BudsInfo {
@@ -46,10 +48,11 @@ pub struct BudsInfoInner {
     pub touchpad_option_right: TouchpadOption,
     pub paused_music_earlier: bool,
     pub debug: DebugInfo,
+    pub model: Model,
 }
 
 impl BudsInfo {
-    pub fn new<S: AsRef<str>>(stream: UnixStream, address: S) -> Self {
+    pub fn new<S: AsRef<str>>(stream: UnixStream, address: S, model: Model) -> Self {
         Self {
             stream,
             inner: BudsInfoInner {
@@ -68,6 +71,7 @@ impl BudsInfo {
                 touchpad_option_right: TouchpadOption::Undetected,
                 paused_music_earlier: false,
                 debug: DebugInfo::default(),
+                model,
             },
             last_debug: SystemTime::now(),
         }

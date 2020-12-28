@@ -1,3 +1,5 @@
+use crate::model::Model;
+
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
 use super::{extended_status_update, get_all_data, status_update, touchpad};
@@ -15,6 +17,7 @@ pub async fn start_listen(
     connection: BudsConnection,
     config: Arc<Mutex<Config>>,
     ch: Arc<Mutex<ConnHandler>>,
+    model: Model,
 ) {
     let mut stream = connection.socket.get_stream();
     let mut buffer: Vec<u8> = Vec::with_capacity(BUFF_SIZE);
@@ -60,7 +63,7 @@ pub async fn start_listen(
         let info = lock
             .data
             .entry(connection.addr.clone())
-            .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr));
+            .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr, model));
 
         match message.get_id() {
             ids::TOUCHPAD_ACTION => {

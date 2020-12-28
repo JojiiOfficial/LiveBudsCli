@@ -29,6 +29,9 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
 
     println!("Info for '{}':", bt_name);
     println!();
+    if app.is_present("verbose") {
+        println!("Type:\t\t{:?}", res.model);
+    }
     println!("Battery:\tL: {}%, R: {}%", res.batt_left, res.batt_right);
 
     // If one bean is not in the case, its batterystatus

@@ -9,10 +9,12 @@ use bluetooth::rfcomm_connector::ConnectionData;
 
 use std::sync::{mpsc, Arc};
 
+use self::bluetooth::rfcomm_connector::ConnectionEventData;
+
 /// Starts the complete daemon
 pub async fn run_daemon(p: String) {
     // Exchange connection events between bluetooth and connection handler
-    let (conn_tx, conn_rx) = mpsc::channel::<String>();
+    let (conn_tx, conn_rx) = mpsc::channel::<ConnectionEventData>();
 
     // Exchanging Buds data between unix socket and the buds listener
     let connection_data = Arc::new(Mutex::new(ConnectionData::new()));

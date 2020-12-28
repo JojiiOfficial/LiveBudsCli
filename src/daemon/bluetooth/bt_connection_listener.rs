@@ -3,8 +3,7 @@
  * forwards connection events to the connector
  */
 
-use super::super::utils;
-
+use crate::model::Model;
 use async_std::task;
 use bluetooth_serial_port_async::BtSocket;
 use blurz::{
@@ -16,6 +15,8 @@ use blurz::{
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
+use super::rfcomm_connector::ConnectionEventData;
+
 /// An active connection to a pair of buds
 #[derive(Debug)]
 pub struct BudsConnection {
@@ -25,7 +26,7 @@ pub struct BudsConnection {
 }
 
 /// Listens for new Bluethooth connections
-pub async fn run(sender: Sender<String>) {
+pub async fn run(sender: Sender<ConnectionEventData>) {
     let session = &BluetoothSession::create_session(None).unwrap();
     let mut printed_adapter_missing = false;
 
@@ -60,8 +61,14 @@ pub async fn run(sender: Sender<String>) {
         // We need this behaivor twice
         let check_device = |device: String| {
             let device = BluetoothDevice::new(&session, device);
-            if utils::is_bt_device_buds_live(&device) {
-                sender.send(device.get_address().unwrap()).unwrap();
+
+            if is_supported_pair_of_buds(&device) {
+                sender
+                    .send(ConnectionEventData {
+                        address: device.get_address().unwrap(),
+                        model: Model::from(device.get_name().unwrap().as_str()),
+                    })
+                    .unwrap();
             }
         };
 
@@ -103,4 +110,13 @@ pub async fn run(sender: Sender<String>) {
             }
         }
     }
+}
+
+/// Checks whether a device is a pair of buds live
+pub fn is_supported_pair_of_buds(device: &BluetoothDevice) -> bool {
+    device
+        .get_uuids()
+        .unwrap()
+        .iter()
+        .any(|s| s.to_lowercase() == "00001101-0000-1000-8000-00805f9b34fb")
 }
