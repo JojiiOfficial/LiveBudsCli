@@ -227,15 +227,15 @@ dependencies = [
 
 [[package]]
 name = "bluetooth-serial-port-async"
-version = "0.6.1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3be2fd0e0b00573e2fb86e1bc590e9f4874d69c268f319108aed96341aaf7e1"
+checksum = "60c2ea2fbe8638ca6c8d456000df6d77d856b18d43c2c96bdd0e338d99b599e8"
 dependencies = [
  "async-std",
  "enum_primitive",
  "libc",
  "mio",
- "nix 0.13.1",
+ "nix 0.19.1",
 ]
 
 [[package]]
@@ -900,19 +900,6 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
-]
-
-[[package]]
-name = "nix"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dbdc256eaac2e3bd236d93ad999d3479ef775c863dbda3068c4006a92eec51b"
-dependencies = [
- "bitflags 1.2.1",
- "cc",
- "cfg-if 0.1.10",
- "libc",
- "void",
 ]
 
 [[package]]

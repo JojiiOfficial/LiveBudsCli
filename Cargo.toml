@@ -14,7 +14,7 @@ readme = "README.md"
 galaxy_buds_live_rs = "0.2.0"
 clap = "3.0.0-beta.2"
 async-std = { version = "1.8.0", features = ["attributes"] }
-bluetooth-serial-port-async = "0.6.1"
+bluetooth-serial-port-async = "0.6.3"
 blurz = "0.4.0"
 ofiles = "0.2.0"
 serde = "1.0.118"
