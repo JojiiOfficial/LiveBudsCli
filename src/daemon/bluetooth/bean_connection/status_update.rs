@@ -66,7 +66,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsCo
         utils::is_some_wearing_state(update.placement_left, update.placement_right);
 
     #[cfg(feature = "pulse-sink")]
-    let mut handler = SinkController::create();
+    let handler = SinkController::create();
 
     // True if put buds on
     if !was_wearing && is_wearing {
@@ -78,7 +78,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsCo
 
         // Don't do music actions if buds aren't default device
         #[cfg(feature = "pulse-sink")]
-        if !sink::is_default(&mut handler, &info).unwrap_or(true) {
+        if handler.is_ok() && !sink::is_default(&mut handler.unwrap(), &info).unwrap_or(true) {
             return;
         }
 
@@ -92,7 +92,7 @@ fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsCo
 
         // Don't do music actions if buds aren't default device
         #[cfg(feature = "pulse-sink")]
-        if !sink::is_default(&mut handler, &info).unwrap_or(true) {
+        if handler.is_ok() && !sink::is_default(&mut handler.unwrap(), &info).unwrap_or(true) {
             return;
         }
 

@@ -25,7 +25,7 @@ toml = "0.5.8"
 mpris = "2.0.0-rc2"
 clap_generate = "3.0.0-beta.2"
 nix = "0.19.1"
-rust-pulsectl-fork = { version = "0.2.8", optional = true }
+rust-pulsectl-fork = { version = "0.2.11", optional = true }
 
 [features]
 default = ["pulse-sink"]

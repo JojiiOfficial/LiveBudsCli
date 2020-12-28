@@ -9,7 +9,7 @@ use pulsectl::controllers::{types::DeviceInfo, DeviceControl, SinkController};
 // Change the default output sink to earbuds if they ain't yet
 #[cfg(feature = "pulse-sink")]
 pub fn make_sink_default(info: &BudsInfo) -> Option<()> {
-    let mut handler = SinkController::create();
+    let mut handler = SinkController::create().ok()?;
 
     if !is_default(&mut handler, &info).unwrap_or(true) {
         // Buds are not set to default
@@ -58,7 +58,7 @@ pub fn fallback_to_sink(info: &mut BudsInfo, update: &StatusUpdate) -> Option<()
     let was_in_case = utils::is_placed_state(info.inner.placement_left, info.inner.placement_right);
     let is_in_case = utils::is_placed_state(update.placement_left, update.placement_right);
 
-    let mut handler = SinkController::create();
+    let mut handler = SinkController::create().ok()?;
 
     if !was_in_case && is_in_case && is_default(&mut handler, &info)? {
         let devices = handler.list_devices().ok()?;
