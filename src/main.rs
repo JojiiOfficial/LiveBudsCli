@@ -2,7 +2,6 @@ mod cli;
 mod cmd;
 mod daemon;
 mod daemon_utils;
-mod model;
 
 use clap::{App, ArgMatches};
 use clap_generate::{

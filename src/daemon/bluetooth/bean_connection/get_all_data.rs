@@ -1,5 +1,5 @@
 use super::super::super::buds_info::BudsInfo;
-use galaxy_buds_live_rs::message::{bud_property::Side, debug::GetAllData};
+use galaxy_buds_rs::message::{bud_property::Side, debug::GetAllData};
 
 pub fn handle(update: GetAllData, info: &mut BudsInfo) {
     // Update values from extended update

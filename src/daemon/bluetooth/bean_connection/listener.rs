@@ -1,12 +1,13 @@
-use crate::model::Model;
-
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
 use super::{extended_status_update, get_all_data, status_update, touchpad};
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
-use galaxy_buds_live_rs::message::{ids, Message};
+use galaxy_buds_rs::{
+    message::{ids, Message},
+    model::Model,
+};
 
 use std::{process::exit, sync::Arc};
 
@@ -47,7 +48,7 @@ pub async fn start_listen(
         };
 
         // The received message from the buds
-        let message = Message::new(&buffer[0..bytes_read]);
+        let message = Message::new(&buffer[0..bytes_read], model);
 
         // validate crc checksum
         if !message.check_crc() {

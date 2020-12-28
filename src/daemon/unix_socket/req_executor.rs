@@ -7,7 +7,7 @@ use super::super::utils;
 
 use async_std::sync::{Arc, Mutex};
 use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
-use galaxy_buds_live_rs::message::{
+use galaxy_buds_rs::message::{
     bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
     lock_touchpad, set_noise_reduction, set_touchpad_option,
     simple::new_equalizer,

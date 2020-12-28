@@ -3,7 +3,7 @@ use super::utils;
 use crate::daemon::utils::{is_str_bool, str_to_bool};
 
 use clap::ArgMatches;
-use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType, TouchpadOption};
+use galaxy_buds_rs::message::bud_property::{BudProperty, EqualizerType, TouchpadOption};
 
 /// Set a value
 pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {

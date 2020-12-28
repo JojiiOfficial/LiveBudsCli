@@ -2,11 +2,12 @@ use std::time::SystemTime;
 
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
-use galaxy_buds_live_rs::message::bud_property::{EqualizerType, Placement, TouchpadOption};
-use galaxy_buds_live_rs::message::{self, debug};
+use galaxy_buds_rs::message::{self, debug};
+use galaxy_buds_rs::{
+    message::bud_property::{EqualizerType, Placement, TouchpadOption},
+    model::Model,
+};
 use serde_derive::{Deserialize, Serialize};
-
-use crate::model::Model;
 
 /// Informations about a connected pair
 /// of Galaxy Buds live
@@ -48,6 +49,7 @@ pub struct BudsInfoInner {
     pub touchpad_option_right: TouchpadOption,
     pub paused_music_earlier: bool,
     pub debug: DebugInfo,
+    #[serde(with = "DefModel")]
     pub model: Model,
 }
 
@@ -98,7 +100,7 @@ impl BudsInfo {
 
 // Serialize/Deserialize Placement
 mod placement_dser {
-    use galaxy_buds_live_rs::message::bud_property::{BudProperty, Placement};
+    use galaxy_buds_rs::message::bud_property::{BudProperty, Placement};
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(placement: &Placement, s: S) -> Result<S::Ok, S::Error>
@@ -118,7 +120,7 @@ mod placement_dser {
 
 // Serialize/Deserialize EqualizerType
 mod equalizer_dser {
-    use galaxy_buds_live_rs::message::bud_property::{BudProperty, EqualizerType};
+    use galaxy_buds_rs::message::bud_property::{BudProperty, EqualizerType};
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(equalizer_type: &EqualizerType, s: S) -> Result<S::Ok, S::Error>
@@ -138,7 +140,7 @@ mod equalizer_dser {
 
 // Serialize/Deserialize TouchpadOption
 mod touchpad_option_dser {
-    use galaxy_buds_live_rs::message::bud_property::{BudProperty, TouchpadOption};
+    use galaxy_buds_rs::message::bud_property::{BudProperty, TouchpadOption};
     use serde::{self, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(touchpad_option: &TouchpadOption, s: S) -> Result<S::Ok, S::Error>
@@ -154,4 +156,12 @@ mod touchpad_option_dser {
     {
         Ok(TouchpadOption::decode(u8::deserialize(deserializer)?))
     }
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "Model")]
+enum DefModel {
+    Buds,
+    BudsPlus,
+    BudsLive,
 }

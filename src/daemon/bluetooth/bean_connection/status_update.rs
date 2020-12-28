@@ -7,7 +7,7 @@ use super::sink;
 use super::utils;
 
 use async_std::sync::{Arc, Mutex};
-use galaxy_buds_live_rs::message::status_updated::StatusUpdate;
+use galaxy_buds_rs::message::status_updated::StatusUpdate;
 
 #[cfg(feature = "pulse-sink")]
 use pulsectl::controllers::SinkController;

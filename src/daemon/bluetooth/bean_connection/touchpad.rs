@@ -4,7 +4,7 @@ use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::bt_connection_listener::BudsConnection;
 
 use async_std::sync::{Arc, Mutex};
-use galaxy_buds_live_rs::message::touchpad_action::TouchAction;
+use galaxy_buds_rs::message::touchpad_action::TouchAction;
 
 // Handle a status update
 pub async fn handle_tap(

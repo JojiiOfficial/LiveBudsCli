@@ -2,11 +2,11 @@ use super::super::buds_config::{BudsConfig, Config};
 use super::super::buds_info::BudsInfo;
 use super::bean_connection;
 use super::bt_connection_listener::BudsConnection;
-use crate::model::Model;
 
 use async_std::sync::Arc;
 use async_std::sync::Mutex;
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
+use galaxy_buds_rs::model::Model;
 
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -149,6 +149,8 @@ pub async fn run(
     let arc_ch = Arc::new(Mutex::new(connection_handler));
 
     for i in rec {
+        println!("rec loop");
+
         let mut connection_handler = arc_ch.lock().await;
 
         // Ignore already connected devices

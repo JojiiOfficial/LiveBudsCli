@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use galaxy_buds_live_rs::message::bud_property::Placement;
+use galaxy_buds_rs::message::bud_property::Placement;
 use mpris::{Player, PlayerFinder};
 use notify_rust::Notification;
 

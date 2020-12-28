@@ -3,14 +3,14 @@
  * forwards connection events to the connector
  */
 
-use crate::model::Model;
-use async_std::task;
+use async_std::task::{self, sleep};
 use bluetooth_serial_port_async::BtSocket;
 use blurz::{
     BluetoothAdapter, BluetoothDevice,
     BluetoothEvent::{self, Connected},
     BluetoothSession,
 };
+use galaxy_buds_rs::model::Model;
 
 use std::sync::mpsc::Sender;
 use std::time::Duration;
@@ -31,6 +31,8 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
     let mut printed_adapter_missing = false;
 
     'outer: loop {
+        println!("outer loop");
+
         let adapter = BluetoothAdapter::init(session);
         if let Err(err) = adapter {
             // Thanks blurz for implementing usable error types
@@ -58,20 +60,6 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
 
         let adapter = adapter.unwrap();
 
-        // We need this behaivor twice
-        let check_device = |device: String| {
-            let device = BluetoothDevice::new(&session, device);
-
-            if is_supported_pair_of_buds(&device) {
-                sender
-                    .send(ConnectionEventData {
-                        address: device.get_address().unwrap(),
-                        model: Model::from(device.get_name().unwrap().as_str()),
-                    })
-                    .unwrap();
-            }
-        };
-
         // check if a pair of buds is already connected!
         if let Ok(devices) = adapter.get_device_list() {
             for device in devices {
@@ -81,12 +69,15 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
                     continue;
                 }
 
-                check_device(device.get_id());
+                check_device(&sender, &session, device.get_id());
             }
         }
 
         // Handle all future connection events
         loop {
+            println!("inner loop");
+            sleep(Duration::from_secs(1)).await;
+            continue;
             if adapter.is_powered().is_err() {
                 continue 'outer;
             }
@@ -105,10 +96,24 @@ pub async fn run(sender: Sender<ConnectionEventData>) {
                         continue;
                     }
 
-                    check_device(object_path);
+                    check_device(&sender, &session, object_path);
                 }
             }
         }
+    }
+}
+
+// We need this behaivor twice
+fn check_device(sender: &Sender<ConnectionEventData>, session: &BluetoothSession, device: String) {
+    let device = BluetoothDevice::new(session, device);
+
+    if is_supported_pair_of_buds(&device) {
+        sender
+            .send(ConnectionEventData {
+                address: device.get_address().unwrap(),
+                model: name_to_model(device.get_name().unwrap().as_str()),
+            })
+            .unwrap();
     }
 }
 
@@ -119,4 +124,17 @@ pub fn is_supported_pair_of_buds(device: &BluetoothDevice) -> bool {
         .unwrap()
         .iter()
         .any(|s| s.to_lowercase() == "00001101-0000-1000-8000-00805f9b34fb")
+}
+
+/// Gives devices model from its name
+fn name_to_model(device_name: &str) -> Model {
+    let device_name = device_name.to_lowercase();
+
+    if device_name.contains("buds live") {
+        Model::BudsLive
+    } else if device_name.contains("buds+") {
+        Model::BudsPlus
+    } else {
+        Model::Buds
+    }
 }

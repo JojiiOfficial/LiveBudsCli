@@ -1,5 +1,5 @@
 use super::super::super::buds_info::BudsInfo;
-use galaxy_buds_live_rs::message::extended_status_updated::ExtendedStatusUpdate;
+use galaxy_buds_rs::message::extended_status_updated::ExtendedStatusUpdate;
 
 pub fn handle(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
     // Update values from extended update

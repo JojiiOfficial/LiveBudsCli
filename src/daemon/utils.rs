@@ -1,4 +1,4 @@
-use galaxy_buds_live_rs::message::bud_property::Side;
+use galaxy_buds_rs::message::bud_property::Side;
 
 /// Converts a str to a boolean. All undefineable
 /// values are false

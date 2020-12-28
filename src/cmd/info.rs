@@ -4,7 +4,7 @@ use crate::daemon::buds_info::BudsInfoInner;
 
 use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
 use clap::ArgMatches;
-use galaxy_buds_live_rs::message::bud_property::Placement;
+use galaxy_buds_rs::message::bud_property::Placement;
 
 /// show status of given address
 pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
