@@ -226,13 +226,13 @@ pub async fn change_connection_status(device_addr: String, connect: bool) -> Str
     let device = devices
         .unwrap()
         .iter()
-        .map(|i| BluetoothDevice::new(&session, i.clone().to_owned()))
+        .map(|i| BluetoothDevice::new(&session, i.clone()))
         .collect::<Vec<BluetoothDevice>>()
         .into_iter()
         .find(|i| i.get_address().unwrap() == device_addr);
 
     if device.is_none() {
-        return format!("Err: device not found!");
+        return "Err: device not found!".to_string();
     }
     let device = device.unwrap();
 

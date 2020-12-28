@@ -43,9 +43,8 @@ async fn main() {
             std::mem::drop(clap);
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
-        } else
-        // Start daemon detached
-        if daemon_utils::start() && !clap.is_present("quiet") {
+        } else if daemon_utils::start() && !clap.is_present("quiet") {
+            // Start daemon detached
             println!("Daemon started successfully")
         }
 

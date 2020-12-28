@@ -83,11 +83,9 @@ fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsCo
         }
 
         // Auto resume
-        if config.auto_play() {
-            if info.inner.paused_music_earlier {
-                utils::try_play();
-                info.inner.paused_music_earlier = false;
-            }
+        if config.auto_play() && info.inner.paused_music_earlier {
+            utils::try_play();
+            info.inner.paused_music_earlier = false;
         }
     } else if !is_some_wearing_state && was_some_wearing {
         // True if take the buds off

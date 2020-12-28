@@ -8,7 +8,7 @@ fn get_finder() -> Option<PlayerFinder> {
     PlayerFinder::new().ok()
 }
 
-fn get_player<'a>(finder: &'a PlayerFinder) -> Option<Player> {
+fn get_player(finder: &PlayerFinder) -> Option<Player> {
     finder.find_active().ok()
 }
 

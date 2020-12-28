@@ -62,16 +62,13 @@ pub fn fallback_to_sink(info: &mut BudsInfo, update: &StatusUpdate) -> Option<()
 
     if !was_in_case && is_in_case && is_default(&mut handler, &info)? {
         let devices = handler.list_devices().ok()?;
-        let fb_device = devices
-            .iter()
-            .filter(|i| {
-                !i.name
-                    .as_ref()
-                    .unwrap_or(&String::new())
-                    .to_lowercase()
-                    .contains(&info.inner.address.to_lowercase())
-            })
-            .next()?;
+        let fb_device = devices.iter().find(|i| {
+            !i.name
+                .as_ref()
+                .unwrap_or(&String::new())
+                .to_lowercase()
+                .contains(&info.inner.address.to_lowercase())
+        })?;
 
         println!("switch to device: {}", fb_device.name.as_ref().unwrap());
         handler.set_default_device(fb_device.name.as_ref()?).ok()?;

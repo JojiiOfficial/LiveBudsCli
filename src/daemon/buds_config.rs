@@ -32,7 +32,7 @@ impl Config {
             // Check if file is empty
             || fs::metadata(&config_file)
                 .await
-                .and_then(|i| Ok(i.len()))
+                .map(|i| i.len())
                 .unwrap_or(1)
                 == 0
         {
@@ -151,7 +151,7 @@ impl Config {
         } else {
             // Set device = default if no other devices found
             let mut config = config;
-            if self.buds_settings.len() == 0 {
+            if self.buds_settings.is_empty() {
                 config.default = Some(true);
             }
 
@@ -178,7 +178,7 @@ impl Config {
 pub fn get_home_dir() -> Option<PathBuf> {
     std::env::var_os("HOME")
         .and_then(|home| if home.is_empty() { None } else { Some(home) })
-        .or_else(|| None)
+        .or(None)
         .map(PathBuf::from)
 }
 

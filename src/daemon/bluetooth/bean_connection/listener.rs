@@ -35,9 +35,7 @@ pub async fn start_listen(
 
     loop {
         buffer.clear();
-        for _ in 0..BUFF_SIZE {
-            buffer.push(0);
-        }
+        buffer.resize(BUFF_SIZE, 0);
 
         let bytes_read = match stream.read(&mut buffer).await {
             Ok(v) => v,
@@ -86,9 +84,7 @@ pub async fn start_listen(
         };
 
         // Send debug request at an approprieate interval
-        if (requested_debug && info.last_debug.elapsed().unwrap_or_default().as_secs() >= 8)
-            || !requested_debug
-        {
+        if !requested_debug || info.last_debug.elapsed().unwrap_or_default().as_secs() >= 8 {
             if let Err(err) = info.request_debug_data().await {
                 println!("Error sending debug request {:?}", err);
             }
