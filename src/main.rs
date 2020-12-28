@@ -92,7 +92,7 @@ fn run_subcommands(clap: ArgMatches) {
 
     // Run set command
     if let Some(subcommand) = clap.subcommand_matches("set") {
-        cmd::value::set(
+        cmd::set_value::set(
             &mut socket_client,
             subcommand,
             false,
@@ -102,17 +102,17 @@ fn run_subcommands(clap: ArgMatches) {
 
     // Run disable command
     if let Some(subcommand) = clap.subcommand_matches("disable") {
-        cmd::value::set(&mut socket_client, subcommand, true, "off");
+        cmd::set_value::set(&mut socket_client, subcommand, false, "off");
     }
 
     // Run enable command
     if let Some(subcommand) = clap.subcommand_matches("enable") {
-        cmd::value::set(&mut socket_client, subcommand, true, "on");
+        cmd::set_value::set(&mut socket_client, subcommand, false, "on");
     }
 
     // Run toggle command
     if let Some(subcommand) = clap.subcommand_matches("toggle") {
-        cmd::value::set(
+        cmd::set_value::set(
             &mut socket_client,
             subcommand,
             true,
