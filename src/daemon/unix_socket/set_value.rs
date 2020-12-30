@@ -11,7 +11,7 @@ use galaxy_buds_rs::{
         lock_touchpad, set_noise_reduction, set_touchpad_option,
         simple::new_equalizer,
     },
-    model::{Feature, Model},
+    model::Feature,
 };
 
 // Parses the payload and runs the actual set-option request
@@ -94,7 +94,7 @@ async fn set_buds_option(
 
 /// Set the anc status
 async fn set_anc(value: &str, buds_info: &mut BudsInfo) -> Result<(), String> {
-    check_feature(buds_info.inner.model, Feature::Anc)?;
+    check_feature(buds_info, Feature::Anc)?;
 
     let value = utils::str_to_bool(&value);
     buds_info.send(set_noise_reduction::new(value)).await?;
@@ -173,7 +173,7 @@ async fn set_ambient_mode(enabled: bool, buds_info: &mut BudsInfo) -> Result<(),
 
 /// Set the ambient volume level
 async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(), String> {
-    check_feature(buds_info.inner.model, Feature::AmbientSound)?;
+    check_feature(buds_info, Feature::AmbientSound)?;
 
     if val > buds_info.get_max_ambientsound_volume_level() {
         return Err("Invalid volume level".to_string());
@@ -199,8 +199,8 @@ async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(),
 }
 
 /// Checks a given feature and returns an error if the feature is unsupported.
-fn check_feature(model: Model, feature: Feature) -> Result<(), String> {
-    if !model.has_feature(feature) {
+fn check_feature(buds_info: &BudsInfo, feature: Feature) -> Result<(), String> {
+    if !buds_info.inner.model.has_feature(feature) {
         Err("Feature not supported by your model".to_string())
     } else {
         Ok(())
