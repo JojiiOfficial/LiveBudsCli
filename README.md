@@ -95,7 +95,6 @@ earbuds enable anc
 Change ambient sound
 ```
 earbuds set ambientsound <0-4> # 0: off 4: highest
-
 ```
 
 Toggle noise reduction or the touchpad lock
@@ -107,7 +106,6 @@ Get status in json format
 ```
 earbuds status -o json
 ```
-
 Set the left touchpad tap command to spotify
 ```
 earbuds set tap-action spotify left
