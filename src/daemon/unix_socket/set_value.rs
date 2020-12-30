@@ -4,11 +4,14 @@ use super::{Request, Response};
 use super::super::buds_info::{BudsInfo, BudsInfoInner};
 use super::super::utils;
 
-use galaxy_buds_rs::message::{
-    ambient_mode,
-    bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
-    lock_touchpad, set_noise_reduction, set_touchpad_option,
-    simple::new_equalizer,
+use galaxy_buds_rs::{
+    message::{
+        ambient_mode,
+        bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
+        lock_touchpad, set_noise_reduction, set_touchpad_option,
+        simple::new_equalizer,
+    },
+    model::{Feature, Model},
 };
 
 // Parses the payload and runs the actual set-option request
@@ -49,15 +52,7 @@ async fn set_buds_option(
 ) -> Result<(), String> {
     match key {
         // Set noise reduction
-        "noise_reduction" => {
-            let value = utils::str_to_bool(&value);
-            let msg = set_noise_reduction::new(value);
-            let res = buds_info.send(msg).await;
-            if res.is_ok() {
-                buds_info.inner.noise_reduction = value;
-            }
-            res
-        }
+        "noise_reduction" => set_anc(value, buds_info).await,
 
         // Set Touchpad lock
         "lock_touchpad" => {
@@ -83,19 +78,28 @@ async fn set_buds_option(
             Err(_) => Err("could not parse value".to_string()),
         },
 
-        // Touchpad option
-        "touchpad_action" => match value.parse::<u8>() {
-            Ok(val) => set_touchpad_action(val, buds_info, opt_param3).await,
+        "touchpad_action" | "ambient_volume" => match value.parse::<u8>() {
+            Ok(val) => match key {
+                "touchpad_action" => set_touchpad_action(val, buds_info, opt_param3).await,
+                "ambient_volume" => set_ambient_volume_cmd(val, buds_info).await,
+
+                _ => Err("Invalid key to set to".to_string()),
+            },
             Err(_) => Err("could not parse value".to_string()),
         },
 
-        // Ambient volume
-        "ambient_volume" => match value.parse::<u8>() {
-            Ok(val) => set_ambient_volume_cmd(val, buds_info).await,
-            Err(_) => Err("could not parse value".to_string()),
-        },
         _ => Err("Invalid key to set to".to_string()),
     }
+}
+
+/// Set the anc status
+async fn set_anc(value: &str, buds_info: &mut BudsInfo) -> Result<(), String> {
+    check_feature(buds_info.inner.model, Feature::Anc)?;
+
+    let value = utils::str_to_bool(&value);
+    buds_info.send(set_noise_reduction::new(value)).await?;
+    buds_info.inner.noise_reduction = value;
+    Ok(())
 }
 
 /// Set the touchpad action
@@ -169,19 +173,19 @@ async fn set_ambient_mode(enabled: bool, buds_info: &mut BudsInfo) -> Result<(),
 
 /// Set the ambient volume level
 async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(), String> {
-    if !buds_info.is_ambient_mode_supported() {
-        return Err("Command not supported for your model".to_string());
-    }
+    check_feature(buds_info.inner.model, Feature::AmbientSound)?;
 
-    if val > 4 {
+    if val > buds_info.get_max_ambientsound_volume_level() {
         return Err("Invalid volume level".to_string());
     }
 
     // Enable/disable extra high ambient volume if needed or not.
-    if val == 4 && !buds_info.inner.extra_high_ambient_volume {
-        set_extra_high_volume(true, buds_info).await?;
-    } else if buds_info.inner.extra_high_ambient_volume {
-        set_extra_high_volume(false, buds_info).await?;
+    if buds_info.has_feature(Feature::ExtraHighAmbientVolume) {
+        if val == 4 && !buds_info.inner.extra_high_ambient_volume {
+            set_extra_high_volume(true, buds_info).await?;
+        } else if buds_info.inner.extra_high_ambient_volume {
+            set_extra_high_volume(false, buds_info).await?;
+        }
     }
 
     // Enable/disable the ambient mode feature
@@ -192,6 +196,15 @@ async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(),
     }
 
     set_ambient_volume(val, buds_info).await
+}
+
+/// Checks a given feature and returns an error if the feature is unsupported.
+fn check_feature(model: Model, feature: Feature) -> Result<(), String> {
+    if !model.has_feature(feature) {
+        Err("Feature not supported by your model".to_string())
+    } else {
+        Ok(())
+    }
 }
 
 // Toggle a given value

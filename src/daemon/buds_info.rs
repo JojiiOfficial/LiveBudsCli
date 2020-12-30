@@ -2,10 +2,13 @@ use std::time::SystemTime;
 
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
-use galaxy_buds_rs::message::{self, debug};
 use galaxy_buds_rs::{
     message::bud_property::{EqualizerType, Placement, TouchpadOption},
     model::Model,
+};
+use galaxy_buds_rs::{
+    message::{self, debug},
+    model::Feature,
 };
 use serde_derive::{Deserialize, Serialize};
 
@@ -85,6 +88,26 @@ impl BudsInfo {
         }
     }
 
+    // shortcut for self.inner.model.has_feature
+    pub fn has_feature(&self, feature: Feature) -> bool {
+        self.inner.model.has_feature(feature)
+    }
+
+    /// Returns the max ambient volume level for the given device
+    pub fn get_max_ambientsound_volume_level(&self) -> u8 {
+        match self.inner.model {
+            Model::BudsLive => 0,
+            Model::BudsPlus => {
+                if self.has_feature(Feature::ExtraHighAmbientVolume) {
+                    4
+                } else {
+                    3
+                }
+            }
+            Model::Buds => 3,
+        }
+    }
+
     // Send a message to the earbuds
     pub async fn send<T>(&self, msg: T) -> Result<(), String>
     where
@@ -101,11 +124,6 @@ impl BudsInfo {
     pub async fn request_debug_data(&mut self) -> Result<(), String> {
         self.last_debug = SystemTime::now();
         self.send(debug::new(debug::DebugVariant::GetAllData)).await
-    }
-
-    // Return true whether ambient mode is supported or not
-    pub fn is_ambient_mode_supported(&self) -> bool {
-        self.inner.model == Model::BudsPlus || self.inner.model == Model::Buds
     }
 }
 
