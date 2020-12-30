@@ -61,13 +61,14 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
     }
 }
 
-/// Return true if the value is allowed for the given key
+/// Return the actual value required for the payload
 fn get_value(key: Key, value: &str) -> String {
     match key {
         Key::Anc | Key::Touchpadlock => str_to_bool(value).to_string(),
         Key::Touchpad => (!str_to_bool(value)).to_string(),
         Key::Equalizer => parse_equalizer(value).encode().to_string(),
         Key::TapAction => parse_tap_action(value).encode().to_string(),
+        Key::AmbientSound => value.to_string(),
     }
 }
 
@@ -77,6 +78,7 @@ fn is_value_ok(key: Key, value: &str) -> bool {
         Key::Touchpadlock | Key::Touchpad | Key::Anc => is_str_bool(value),
         Key::Equalizer => parse_equalizer(value) != EqualizerType::Undetected,
         Key::TapAction => parse_tap_action(value) != TouchpadOption::Undetected,
+        Key::AmbientSound => utils::is_number(value),
     }
 }
 
@@ -109,8 +111,9 @@ enum Key {
     Anc,
     Equalizer,
     Touchpadlock,
-    Touchpad, // I prefer to type 'set touchpad 1' instead of 'set touchpadlock 0'
+    Touchpad, // I prefer 'set touchpad 1' over 'set touchpadlock 0'
     TapAction,
+    AmbientSound,
 }
 
 impl Key {
@@ -121,6 +124,7 @@ impl Key {
             Key::Touchpadlock => "lock_touchpad",
             Key::Touchpad => "lock_touchpad",
             Key::TapAction => "touchpad_action",
+            Key::AmbientSound => "ambient_volume",
         })
     }
 
@@ -131,6 +135,7 @@ impl Key {
             "touchpadlock" => Key::Touchpadlock,
             "touchpad" => Key::Touchpad,
             "tap-action" => Key::TapAction,
+            "ambientsound" => Key::AmbientSound,
             _ => return None,
         })
     }

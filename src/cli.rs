@@ -81,6 +81,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
                             "anc",
                             "touchpadlock",
                             "touchpad",
+                            "ambientsound",
                             "tap-action",
                         ]),
                 )

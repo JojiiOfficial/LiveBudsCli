@@ -27,3 +27,8 @@ where
 
     resp.payload.clone()
 }
+
+/// Returns true if passed 'input' is parsable to an i32
+pub fn is_number<S: AsRef<str>>(input: S) -> bool {
+    input.as_ref().parse::<i32>().is_ok()
+}

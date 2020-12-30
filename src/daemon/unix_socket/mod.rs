@@ -1,6 +1,6 @@
 mod bluetooth_commands;
 mod config;
-pub mod connection_handler;
+pub mod request_handler;
 mod set_value;
 pub mod socket;
 

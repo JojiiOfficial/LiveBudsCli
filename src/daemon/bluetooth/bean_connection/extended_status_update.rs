@@ -26,7 +26,7 @@ fn update_extended_status(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
 
     // Ambient mode for buds
     if info.inner.model == Model::BudsPlus {
-        info.inner.ambient_sound_volume = update.ambient_sound_volume;
+        info.inner.ambient_sound_volume = update.ambient_sound_volume as u8; // TODO make u8
         info.inner.ambient_sound_enabled = update.ambient_sound_enabled;
         info.inner.extra_high_ambient_volume = update.extra_high_ambient;
     }

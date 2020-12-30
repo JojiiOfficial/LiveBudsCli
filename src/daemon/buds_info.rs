@@ -52,7 +52,7 @@ pub struct BudsInfoInner {
     #[serde(with = "DefModel")]
     pub model: Model,
     pub ambient_sound_enabled: bool,
-    pub ambient_sound_volume: i32,
+    pub ambient_sound_volume: u8,
     pub extra_high_ambient_volume: bool,
 }
 
