@@ -5,7 +5,7 @@
 [![earbuds-git](https://img.shields.io/aur/version/earbuds-git?style=flat-square&label=earbuds-git&logo=arch-linux)](https://aur.archlinux.org/packages/earbuds-git/)
 
 # LiveBudsCli
-A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live) (and [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/))
+A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live) [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/)
 
 <table>
 <tr>
@@ -21,19 +21,19 @@ A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mo
 
 
 # Features
-- [x] Equalizer, touchpad-lock and anc control
-- [x] Basic Buds status (battery, anc, current equalizer setting, ...)
+- [x] Equalizer, touchpad-lock and anc/ambient sound control
+- [x] Basic Buds status (battery, anc/ambient sound, current equalizer setting, ...)
+- [x] Changing touchpad tap action
 - [x] Advanced status informations (battery voltage/current, temperature)
 - [x] Auto music play/pause on bud remove (via mpris)
-- [x] Desktop notification for low battery
+- [x] Automatic sink switch (pulseaudio) [feature: `pulse-sink`, used by default]
+- [x] Desktop notifications (for low battery)
+- [x] Bash completion (for every shell)
 - [x] Connect/Disconnect your earbuds easily with a subcommand
 - [x] Multiple device support
 - [x] Individual device configs
-- [x] Automatic sink switch (pulseaudio) [feature: `pulse-sink`, used by default]
-- [x] Bash completion (for every shell)
-- [x] Change touchpad tap action
-- [x] Change config options from cli
 - [x] Json output for scripts (via `jq`)
+- [x] Change config options from cli
 
 # Install
 
@@ -92,12 +92,18 @@ Enable ANC
 earbuds enable anc
 ```
 
+Change ambient sound
+```
+earbuds set ambientsound <0-4> # 0: off 4: highest
+
+```
+
 Toggle noise reduction or the touchpad lock
 ```
 earbuds toggle anc/touchpad
 ```
 
-Get Status in json format
+Get status in json format
 ```
 earbuds status -o json
 ```
@@ -107,7 +113,7 @@ Set the left touchpad tap command to spotify
 earbuds set tap-action spotify left
 ```
 
-Connect/Disconnect:
+Connect/disconnect:
 ```
 earbuds connect/disconnect
 ```
