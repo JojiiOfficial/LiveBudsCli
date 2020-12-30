@@ -3,7 +3,7 @@ use super::{
     super::super::{buds_config::Config, buds_info::BudsInfo},
     ambient_mode,
 };
-use super::{extended_status_update, get_all_data, status_update, touchpad};
+use super::{anc, extended_status_update, get_all_data, status_update, touchpad};
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
@@ -86,6 +86,10 @@ pub async fn start_listen(
 
             ids::AMBIENT_MODE_UPDATED => {
                 ambient_mode::handle(message.into(), info);
+            }
+
+            ids::NOISE_REDUCTION_MODE_UPDATE => {
+                anc::handle(message.into(), info);
             }
 
             _ => (),
