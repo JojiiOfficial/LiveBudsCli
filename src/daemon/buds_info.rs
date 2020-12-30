@@ -102,6 +102,11 @@ impl BudsInfo {
         self.last_debug = SystemTime::now();
         self.send(debug::new(debug::DebugVariant::GetAllData)).await
     }
+
+    // Return true whether ambient mode is supported or not
+    pub fn is_ambient_mode_supported(&self) -> bool {
+        self.inner.model == Model::BudsPlus || self.inner.model == Model::Buds
+    }
 }
 
 // Serialize/Deserialize Placement

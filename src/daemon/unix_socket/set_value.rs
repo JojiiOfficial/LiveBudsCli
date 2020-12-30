@@ -4,13 +4,11 @@ use super::{Request, Response};
 use super::super::buds_info::{BudsInfo, BudsInfoInner};
 use super::super::utils;
 
-use galaxy_buds_rs::{
-    message::{
-        bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
-        lock_touchpad, set_noise_reduction, set_touchpad_option,
-        simple::new_equalizer,
-    },
-    model::Model,
+use galaxy_buds_rs::message::{
+    ambient_mode,
+    bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
+    lock_touchpad, set_noise_reduction, set_touchpad_option,
+    simple::new_equalizer,
 };
 
 // Parses the payload and runs the actual set-option request
@@ -93,7 +91,7 @@ async fn set_buds_option(
 
         // Ambient volume
         "ambient_volume" => match value.parse::<u8>() {
-            Ok(val) => set_ambient_volume(val, buds_info).await,
+            Ok(val) => set_ambient_volume_cmd(val, buds_info).await,
             Err(_) => Err("could not parse value".to_string()),
         },
         _ => Err("Invalid key to set to".to_string()),
@@ -133,39 +131,67 @@ async fn set_touchpad_action(
     res
 }
 
+/// Sets the extra high ambient volume value.
+async fn set_extra_high_volume(enabled: bool, buds_info: &mut BudsInfo) -> Result<(), String> {
+    println!("setting extra high volume {}", enabled);
+
+    buds_info
+        .send(ambient_mode::SetExtraHighVolume::new(enabled))
+        .await?;
+
+    buds_info.inner.extra_high_ambient_volume = enabled;
+    Ok(())
+}
+
+/// Sets the ambient volume.
+async fn set_ambient_volume(volume: u8, buds_info: &mut BudsInfo) -> Result<(), String> {
+    println!("setting ambient volume to {}", volume);
+
+    buds_info
+        .send(ambient_mode::SetAmbientVolume::new(volume))
+        .await?;
+
+    buds_info.inner.ambient_sound_volume = volume;
+    Ok(())
+}
+
+/// Sets the ambient mode.
+async fn set_ambient_mode(enabled: bool, buds_info: &mut BudsInfo) -> Result<(), String> {
+    println!("setting ambient state to {}", enabled);
+
+    buds_info
+        .send(ambient_mode::SetAmbientMode::new(enabled))
+        .await?;
+
+    buds_info.inner.ambient_sound_enabled = enabled;
+    Ok(())
+}
+
 /// Set the ambient volume level
-async fn set_ambient_volume(val: u8, buds_info: &mut BudsInfo) -> Result<(), String> {
-    if buds_info.inner.model != Model::BudsPlus {
-        //     return Err("Not supported for your model".to_string());
+async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(), String> {
+    if !buds_info.is_ambient_mode_supported() {
+        return Err("Command not supported for your model".to_string());
     }
 
     if val > 4 {
         return Err("Invalid volume level".to_string());
     }
 
-    if buds_info.inner.ambient_sound_volume == val {
-        return Ok(());
-    }
-
+    // Enable/disable extra high ambient volume if needed or not.
     if val == 4 && !buds_info.inner.extra_high_ambient_volume {
-        println!("enable extra high");
-
-        buds_info.inner.extra_high_ambient_volume = true;
+        set_extra_high_volume(true, buds_info).await?;
     } else if buds_info.inner.extra_high_ambient_volume {
-        println!("disable extra high");
-
-        buds_info.inner.extra_high_ambient_volume = false;
+        set_extra_high_volume(false, buds_info).await?;
     }
 
+    // Enable/disable the ambient mode feature
     if val == 0 {
-        println!("disable ambient");
-    } else if buds_info.inner.ambient_sound_volume == 0 {
-        println!("enableble ambient");
+        return set_ambient_mode(false, buds_info).await; // Don't run set_ambient_volume after disabling it.
+    } else if !buds_info.inner.ambient_sound_enabled {
+        set_ambient_mode(true, buds_info).await?;
     }
 
-    println!("level: {}", val);
-    buds_info.inner.ambient_sound_volume = val;
-    Ok(())
+    set_ambient_volume(val, buds_info).await
 }
 
 // Toggle a given value
