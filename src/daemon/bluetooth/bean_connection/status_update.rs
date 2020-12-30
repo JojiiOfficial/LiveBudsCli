@@ -12,6 +12,15 @@ use galaxy_buds_rs::message::status_updated::StatusUpdate;
 #[cfg(feature = "pulse-sink")]
 use pulsectl::controllers::SinkController;
 
+// Update a BudsInfo to the values of an extended_status_update
+fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
+    info.inner.batt_left = update.battery_left;
+    info.inner.batt_right = update.battery_right;
+    info.inner.batt_case = update.battery_case;
+    info.inner.placement_left = update.placement_left;
+    info.inner.placement_right = update.placement_right;
+}
+
 // Handle a status update
 pub async fn handle(
     update: StatusUpdate,
@@ -103,13 +112,4 @@ fn handle_auto_music(update: &StatusUpdate, info: &mut BudsInfo, config: &BudsCo
             }
         }
     }
-}
-
-// Update a BudsInfo to the values of an extended_status_update
-fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
-    info.inner.batt_left = update.battery_left;
-    info.inner.batt_right = update.battery_right;
-    info.inner.batt_case = update.battery_case;
-    info.inner.placement_left = update.placement_left;
-    info.inner.placement_right = update.placement_right;
 }

@@ -7,7 +7,7 @@ use async_std::sync::{Arc, Mutex};
 use galaxy_buds_rs::message::touchpad_action::TouchAction;
 
 // Handle a status update
-pub async fn handle_tap(
+pub async fn handle(
     tap_info: TouchAction,
     info: &mut BudsInfo,
     config: &Arc<Mutex<Config>>,

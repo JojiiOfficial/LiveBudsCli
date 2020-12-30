@@ -1,5 +1,5 @@
 use super::super::super::buds_info::BudsInfo;
-use galaxy_buds_rs::message::extended_status_updated::ExtendedStatusUpdate;
+use galaxy_buds_rs::{message::extended_status_updated::ExtendedStatusUpdate, model::Model};
 
 pub fn handle(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
     // Update values from extended update
@@ -23,4 +23,11 @@ fn update_extended_status(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
     info.inner.noise_reduction = update.noise_reduction;
     info.inner.touchpad_option_left = update.touchpad_option_left;
     info.inner.touchpad_option_right = update.touchpad_option_right;
+
+    // Ambient mode for buds
+    if info.inner.model == Model::BudsPlus {
+        info.inner.ambient_sound_volume = update.ambient_sound_volume;
+        info.inner.ambient_sound_enabled = update.ambient_sound_enabled;
+        info.inner.extra_high_ambient_volume = update.extra_high_ambient;
+    }
 }

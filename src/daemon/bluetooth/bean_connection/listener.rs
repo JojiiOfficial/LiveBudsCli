@@ -1,5 +1,8 @@
-use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
+use super::{
+    super::super::{buds_config::Config, buds_info::BudsInfo},
+    ambient_mode,
+};
 use super::{extended_status_update, get_all_data, status_update, touchpad};
 
 use async_std::io::prelude::*;
@@ -23,7 +26,7 @@ pub async fn start_listen(
     let mut stream = connection.socket.get_stream();
     let mut buffer: Vec<u8> = Vec::with_capacity(BUFF_SIZE);
 
-    // Check config
+    // Check config errors
     {
         let mut cfg = config.lock().await;
         if let Err(err) = cfg.load().await {
@@ -66,7 +69,7 @@ pub async fn start_listen(
 
         match message.get_id() {
             ids::TOUCHPAD_ACTION => {
-                touchpad::handle_tap(message.into(), info, &config, &connection).await
+                touchpad::handle(message.into(), info, &config, &connection).await
             }
 
             ids::STATUS_UPDATED => {
@@ -81,10 +84,14 @@ pub async fn start_listen(
                 get_all_data::handle(message.into(), info);
             }
 
+            ids::AMBIENT_MODE_UPDATED => {
+                ambient_mode::handle(message.into(), info);
+            }
+
             _ => (),
         };
 
-        // Send debug request at an approprieate interval
+        // Send debug request at an appropriate interval
         if !requested_debug || info.last_debug.elapsed().unwrap_or_default().as_secs() >= 8 {
             if let Err(err) = info.request_debug_data().await {
                 println!("Error sending debug request {:?}", err);

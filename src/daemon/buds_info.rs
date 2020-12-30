@@ -51,6 +51,9 @@ pub struct BudsInfoInner {
     pub debug: DebugInfo,
     #[serde(with = "DefModel")]
     pub model: Model,
+    pub ambient_sound_enabled: bool,
+    pub ambient_sound_volume: i32,
+    pub extra_high_ambient_volume: bool,
 }
 
 impl BudsInfo {
@@ -74,6 +77,9 @@ impl BudsInfo {
                 paused_music_earlier: false,
                 debug: DebugInfo::default(),
                 model,
+                ambient_sound_enabled: false,
+                ambient_sound_volume: 0,
+                extra_high_ambient_volume: false,
             },
             last_debug: SystemTime::now(),
         }
