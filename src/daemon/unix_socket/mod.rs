@@ -1,5 +1,7 @@
+mod bluetooth_commands;
+mod config;
 pub mod connection_handler;
-mod req_executor;
+mod set_value;
 pub mod socket;
 
 use serde_derive::{Deserialize, Serialize};

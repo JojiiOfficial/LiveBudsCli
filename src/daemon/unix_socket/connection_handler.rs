@@ -1,7 +1,7 @@
-use super::super::bluetooth::rfcomm_connector::ConnectionData;
-use super::super::buds_config::Config;
 use super::super::buds_info::BudsInfoInner;
-use super::req_executor;
+use super::set_value;
+use super::{super::bluetooth::rfcomm_connector::ConnectionData, config};
+use super::{super::buds_config::Config, bluetooth_commands};
 use super::{Request, Response};
 
 use async_std::{
@@ -83,16 +83,19 @@ async fn run_payload_cmd(
         }
         "set_value" => {
             let mut device = connection_data.get_device_mut(&device_addr).unwrap();
-            req_executor::set_buds_value(&payload, &mut device).await
+            set_value::set(&payload, &mut device).await
         }
         "toggle_value" => {
             let mut device = connection_data.get_device_mut(&device_addr).unwrap();
-            req_executor::toggle_buds_value(&payload, &mut device).await
+            set_value::toggle(&payload, &mut device).await
         }
-        "set_config" => req_executor::set_config_value(&payload, device_addr.clone(), config).await,
+        "set_config" => config::set_value(&payload, device_addr.clone(), config).await,
         "disconnect" | "connect" => {
-            req_executor::change_connection_status(device_addr.clone(), payload.cmd == "connect")
-                .await
+            bluetooth_commands::change_connection_status(
+                device_addr.clone(),
+                payload.cmd == "connect",
+            )
+            .await
         }
 
         _ => return None,
