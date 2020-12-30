@@ -8,7 +8,7 @@ use super::{anc, extended_status_update, get_all_data, status_update, touchpad};
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
 use galaxy_buds_rs::{
-    message::{ids, Message},
+    message::{self, ids, Message, Payload},
     model::Model,
 };
 
@@ -78,6 +78,12 @@ pub async fn start_listen(
 
             ids::EXTENDED_STATUS_UPDATED => {
                 extended_status_update::handle(message.into(), info);
+
+                // Respond with set manager
+                stream
+                    .write(&message::manager::new(true, 24).get_data())
+                    .await
+                    .unwrap();
             }
 
             ids::DEBUG_GET_ALL_DATA => {
