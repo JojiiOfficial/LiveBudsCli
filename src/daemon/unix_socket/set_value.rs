@@ -182,6 +182,11 @@ async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(),
     // Enable/disable extra high ambient volume if needed or not.
     if buds_info.has_feature(Feature::ExtraHighAmbientVolume) {
         if val == 4 && !buds_info.inner.extra_high_ambient_volume {
+            // Enable ambient sound if not already enabled
+            if !buds_info.inner.ambient_sound_enabled {
+                set_ambient_mode(true, buds_info).await?;
+            }
+
             set_extra_high_volume(true, buds_info).await?;
         } else if buds_info.inner.extra_high_ambient_volume {
             set_extra_high_volume(false, buds_info).await?;
@@ -189,10 +194,15 @@ async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(),
     }
 
     // Enable/disable the ambient mode feature
-    if val == 0 {
+    if val == 0 && buds_info.inner.ambient_sound_enabled {
         return set_ambient_mode(false, buds_info).await; // Don't run set_ambient_volume after disabling it.
-    } else if !buds_info.inner.ambient_sound_enabled {
+    } else if val != 0 && !buds_info.inner.ambient_sound_enabled {
         set_ambient_mode(true, buds_info).await?;
+    }
+
+    // We don't need to send volume 0 to the buds
+    if val == 0 {
+        return Ok(());
     }
 
     set_ambient_volume(val, buds_info).await
