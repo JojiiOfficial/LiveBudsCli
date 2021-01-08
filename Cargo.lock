@@ -412,6 +412,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dbus"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3b1334c0161ddfccd239ac81b188d62015b049c986c5cd0b7f9447cf2c54f4a3"
+dependencies = [
+ "libc",
+ "libdbus-sys",
+]
+
+[[package]]
 name = "derive_is_enum_variant"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -929,11 +939,11 @@ dependencies = [
 
 [[package]]
 name = "notify-rust"
-version = "4.0.0"
+version = "4.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "144acee6a0543dc74893e4b8a33936b5b0a94cc2d4ab024afd0c6daff7afc3c0"
+checksum = "95a3a5dd7b4b415b112ce0fae1988f3e6dee90a96918bf3950b5f2289b19a04b"
 dependencies = [
- "dbus 0.8.4",
+ "dbus 0.9.1",
  "mac-notification-sys",
  "winrt-notification",
 ]
