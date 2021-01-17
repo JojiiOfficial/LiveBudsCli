@@ -12,7 +12,7 @@ use galaxy_buds_rs::message::{
     touchpad_action::TouchAction,
 };
 
-const REQUIRED_TAP_DURATION: u8 = 3;
+const REQUIRED_TAP_DURATION: u8 = 2;
 
 // Handle a status update
 pub async fn handle(
@@ -20,7 +20,7 @@ pub async fn handle(
     info: &mut BudsInfo,
     config: &Arc<Mutex<Config>>,
     connection: &BudsConnection,
-) {
+) -> bool {
     let early_exit;
 
     if info.inner.touchpads_blocked {
@@ -53,7 +53,7 @@ pub async fn handle(
     }
 
     if tap_info.touch_count != 7 || early_exit {
-        return;
+        return false;
     }
 
     // We don't need that hold count crap if the tap-action is set to 'Disconnect' and touchpads
@@ -61,7 +61,7 @@ pub async fn handle(
     if !info.inner.touchpads_blocked {
         bluetooth_commands::change_connection_status(&connection.addr, false).await;
         info.reset_last_tp_update();
-        return;
+        return true;
     }
 
     // Reset Touchpad action counter
@@ -91,5 +91,7 @@ pub async fn handle(
         // Disconnect
         bluetooth_commands::change_connection_status(&connection.addr, false).await;
         info.reset_last_tp_update();
+        return true;
     }
+    false
 }

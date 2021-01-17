@@ -149,24 +149,28 @@ pub async fn run(
     let arc_ch = Arc::new(Mutex::new(connection_handler));
 
     for i in rec {
-        let mut connection_handler = arc_ch.lock().await;
+        let connection = {
+            let mut connection_handler = arc_ch.lock().await;
 
-        // Ignore already connected devices
-        if connection_handler.has_device(i.address.as_str()) {
-            continue;
-        }
+            // Ignore already connected devices
+            if connection_handler.has_device(i.address.as_str()) {
+                continue;
+            }
 
-        // Connect to the RFCOMM interface of the buds
-        let connection = connect_rfcomm(i.address.clone());
-        if let Err(err) = connection {
-            eprintln!("Error connecting to rfcomm: {:?}", err);
-            continue;
-        }
+            // Connect to the RFCOMM interface of the buds
+            let connection = connect_rfcomm(i.address.clone());
+            if let Err(err) = connection {
+                eprintln!("Error connecting to rfcomm: {:?}", err);
+                continue;
+            }
 
-        println!("Connected successfully to Buds live!");
+            println!("Connected successfully to Buds live!");
 
-        // Add device to the connection handler
-        connection_handler.add_device(i.address.to_owned());
+            // Add device to the connection handler
+            connection_handler.add_device(i.address.to_owned());
+
+            connection
+        };
 
         // Set default config for (apparently) new device
         {
