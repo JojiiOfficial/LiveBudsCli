@@ -1,7 +1,7 @@
 use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
 
 // Connect or disconnect to the buds
-pub async fn change_connection_status(device_addr: String, connect: bool) -> String {
+pub async fn change_connection_status<S: AsRef<str>>(device_addr: S, connect: bool) -> String {
     // Init bluetooth session and adapter
     let session = BluetoothSession::create_session(None);
     if session.is_err() {
@@ -25,7 +25,7 @@ pub async fn change_connection_status(device_addr: String, connect: bool) -> Str
         .map(|i| BluetoothDevice::new(&session, i.clone()))
         .collect::<Vec<BluetoothDevice>>()
         .into_iter()
-        .find(|i| i.get_address().unwrap() == device_addr);
+        .find(|i| i.get_address().unwrap() == *device_addr.as_ref());
 
     if device.is_none() {
         return "Err: device not found!".to_string();

@@ -1,4 +1,4 @@
-mod bluetooth_commands;
+pub mod bluetooth_commands;
 mod config;
 pub mod request_handler;
 mod set_value;

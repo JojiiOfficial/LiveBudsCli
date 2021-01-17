@@ -19,6 +19,7 @@ pub struct BudsConfig {
     pub auto_pause_music: Option<bool>,
     pub smart_sink: Option<bool>,
     pub smart_touchpad: Option<bool>,
+    pub hold_to_disconnect: Option<bool>,
 }
 
 impl Config {

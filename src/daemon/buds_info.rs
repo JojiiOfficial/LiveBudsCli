@@ -18,6 +18,8 @@ pub struct BudsInfo {
     pub stream: UnixStream,
     pub inner: BudsInfoInner,
     pub last_debug: SystemTime,
+    pub left_tp_hold_count: u8,
+    pub right_tp_hold_count: u8,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -85,6 +87,8 @@ impl BudsInfo {
                 extra_high_ambient_volume: false,
             },
             last_debug: SystemTime::now(),
+            left_tp_hold_count: 0,
+            right_tp_hold_count: 0,
         }
     }
 
