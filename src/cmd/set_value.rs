@@ -89,6 +89,7 @@ fn parse_tap_action(value: &str) -> TouchpadOption {
         "spotify" => TouchpadOption::Spotify,
         "voice-command" => TouchpadOption::VoiceCommand,
         "anc" => TouchpadOption::NoiseCanceling,
+        "disconnect" => TouchpadOption::Disconnect,
         _ => TouchpadOption::Undetected,
     }
 }
