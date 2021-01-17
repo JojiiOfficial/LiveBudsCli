@@ -20,6 +20,7 @@ pub struct BudsInfo {
     pub last_debug: SystemTime,
     pub left_tp_hold_count: u8,
     pub right_tp_hold_count: u8,
+    pub last_tp_update: SystemTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -89,12 +90,19 @@ impl BudsInfo {
             last_debug: SystemTime::now(),
             left_tp_hold_count: 0,
             right_tp_hold_count: 0,
+            last_tp_update: SystemTime::now(),
         }
     }
 
     // shortcut for self.inner.model.has_feature
     pub fn has_feature(&self, feature: Feature) -> bool {
         self.inner.model.has_feature(feature)
+    }
+
+    /// resets the last_tp_update value
+    pub fn reset_last_tp_update(&mut self) {
+        self.left_tp_hold_count = 0;
+        self.right_tp_hold_count = 0;
     }
 
     /// Returns the max ambient volume level for the given device
