@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 BUDS_STATUS=`earbuds status -o json -q`
 
 REQ_STATUS=`echo $BUDS_STATUS | jq '.status' -r`
