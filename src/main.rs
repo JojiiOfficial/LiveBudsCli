@@ -10,6 +10,7 @@ use clap_generate::{
     Generator,
 };
 use cmd::socket_client::SocketClient;
+use human_panic::setup_panic;
 
 use std::process::exit;
 
@@ -17,6 +18,8 @@ const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 
 #[async_std::main]
 async fn main() {
+    setup_panic!();
+
     let clap = {
         let s = "";
         cli::build(&s).get_matches()
