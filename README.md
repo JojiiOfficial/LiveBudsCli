@@ -5,7 +5,7 @@
 [![earbuds-git](https://img.shields.io/aur/version/earbuds-git?style=flat-square&label=earbuds-git&logo=arch-linux)](https://aur.archlinux.org/packages/earbuds-git/)
 
 # LiveBudsCli
-A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live) and [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/)
+A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live), [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/) (and [Galaxy Buds Pro](https://www.samsung.com/us/mobile/audio/galaxy-buds-pro/) (Beta))
 
 <table>
 <tr>
@@ -59,7 +59,7 @@ cargo install earbuds
 # Polybar
 ![Polybar](.imgs/polybar.png)
 <br>
-You can display the status of your buds live in your polybar with [this script](https://github.com/JojiiOfficial/LiveBudsCli/tree/master/scripts/polybar.sh)
+You can display the status of your buds in your polybar with [this script](https://github.com/JojiiOfficial/LiveBudsCli/tree/master/scripts/polybar.sh)
 <br>
 To achieve this, you have to add following to your polybar config and move the script into your polybar script folder. Don't forget to add `buds` to the modules section.
 ```
