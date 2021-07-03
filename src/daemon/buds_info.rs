@@ -108,6 +108,13 @@ impl BudsInfo {
     /// Returns the max ambient volume level for the given device
     pub fn get_max_ambientsound_volume_level(&self) -> u8 {
         match self.inner.model {
+            Model::BudsPro => {
+                if self.has_feature(Feature::ExtraHighAmbientVolume) {
+                    4
+                } else {
+                    3
+                }
+            }
             Model::BudsLive => 0,
             Model::BudsPlus => {
                 if self.has_feature(Feature::ExtraHighAmbientVolume) {
@@ -205,4 +212,5 @@ enum DefModel {
     Buds,
     BudsPlus,
     BudsLive,
+    BudsPro,
 }

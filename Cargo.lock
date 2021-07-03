@@ -741,7 +741,7 @@ dependencies = [
 [[package]]
 name = "galaxy_buds_rs"
 version = "0.2.9"
-source = "git+https://github.com/JojiiOfficial/GalaxyBuds-rs#45f35d3409f724c06c92d9b11e4c912cea5b24e2"
+source = "git+https://github.com/JojiiOfficial/GalaxyBuds-rs#2ae05015e4c437d147ce58a8eb86abd588d7c638"
 dependencies = [
  "async-std",
  "bluetooth-serial-port-async",
