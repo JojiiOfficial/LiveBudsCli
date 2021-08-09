@@ -24,7 +24,7 @@ pub async fn start_listen(
     model: Model,
 ) {
     let mut stream = connection.socket.get_stream();
-    let mut buffer: Vec<u8> = Vec::with_capacity(BUFF_SIZE);
+    let mut buffer: Vec<u8> = vec![0u8; BUFF_SIZE];
 
     // Check config errors
     {
@@ -36,11 +36,9 @@ pub async fn start_listen(
     }
 
     let mut requested_debug = false;
+    let mut first_msg = true;
 
     loop {
-        buffer.clear();
-        buffer.resize(BUFF_SIZE, 0);
-
         let bytes_read = match stream.read(&mut buffer).await {
             Ok(v) => v,
             Err(_) => {
@@ -53,9 +51,19 @@ pub async fn start_listen(
         // The received message from the buds
         let message = Message::new(&buffer[0..bytes_read], model);
 
+        if !message.is_message() {
+            first_msg = true;
+            continue;
+        }
+
         // validate crc checksum
         if !message.check_crc() {
-            println!("WARNING: CRC failed. Skipping message");
+            // First received message always throws an CRC error. Since its nothing important we
+            // can igonre it. However we don't want and need it to print an error.
+            if !first_msg {
+                println!("WARNING: CRC failed. Skipping message");
+            }
+            first_msg = false;
             continue;
         }
 
@@ -119,6 +127,10 @@ pub async fn start_listen(
             if !requested_debug {
                 requested_debug = true;
             }
+        }
+
+        if first_msg {
+            first_msg = false;
         }
 
         // Disconnect from device
