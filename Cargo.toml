@@ -24,7 +24,7 @@ serde_json = "1.0.66"
 notify-rust = "4.5.2"
 toml = "0.5.8"
 mpris = "2.0.0-rc2"
-clap_generate = "3.0.0-beta.2"
+clap_generate = "3.0.3"
 nix = "0.22.0"
 rust-pulsectl-fork = { version = "0.2.12", optional = true }
 human-panic = "1.0.3"
