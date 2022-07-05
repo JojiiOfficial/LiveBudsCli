@@ -1,19 +1,19 @@
-use clap::{crate_version, App, AppSettings, Arg, ValueHint};
+use clap::{App, AppSettings, Arg, ValueHint};
 
 pub fn build<'a>(_s: &str) -> App<'a> {
     App::new("earbuds")
         .setting(AppSettings::TrailingVarArg)
         .setting(AppSettings::ColoredHelp)
         .setting(AppSettings::ArgRequiredElseHelp)
-        .version(crate_version!())
+        //.version(crate_version!())
         .author("Jojii S")
-        .about("Control your Galaxy Buds live from cli")
+        //.help("Control your Galaxy Buds live from cli")
         .arg(
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
                 .global(true)
-                .about("Prints informations verbosely"),
+                .help("Prints informations verbosely"),
         )
         .arg(
             Arg::new("output")
@@ -25,29 +25,29 @@ pub fn build<'a>(_s: &str) -> App<'a> {
         .arg(
             Arg::new("generator")
                 .long("generate")
-                .about("Generate completion scripts for a given type of shell")
+                .help("Generate completion scripts for a given type of shell")
                 .possible_values(&["bash", "elvish", "fish", "powershell", "zsh"]),
         )
         .arg(
             Arg::new("daemon")
-                .about("Starts the daemon")
+                .help("Starts the daemon")
                 .long("daemon")
                 .short('d'),
         )
         .arg(
             Arg::new("no-fork")
-                .about("Don't fork the daemon")
+                .help("Don't fork the daemon")
                 .long("no-fork"),
         )
         .arg(
             Arg::new("kill-daemon")
-                .about("Kill the daemon. If used together with -d, the daemon will get restarted")
+                .help("Kill the daemon. If used together with -d, the daemon will get restarted")
                 .short('k')
                 .long("kill-daemon"),
         )
         .arg(
             Arg::new("quiet")
-                .about("Don't print extra output")
+                .help("Don't print extra output")
                 .short('q')
                 .global(true)
                 .long("quiet"),
@@ -55,7 +55,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
         .arg(
             Arg::new("device")
                 .global(true)
-                .about("Specify the device to use")
+                .help("Specify the device to use")
                 .short('s')
                 .takes_value(true)
                 .value_hint(ValueHint::Unknown)
@@ -65,13 +65,13 @@ pub fn build<'a>(_s: &str) -> App<'a> {
             App::new("status")
                 .setting(AppSettings::ColoredHelp)
                 .alias("info")
-                .about("Display informations for a given device"),
+                .help("Display informations for a given device"),
         )
         .subcommand(
             App::new("set")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)
-                .about("Turn on/off features and control the equalizer setting")
+                .help("Turn on/off features and control the equalizer setting")
                 .arg(
                     Arg::new("key")
                         .required(true)
@@ -88,7 +88,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
                 .arg(Arg::new("value").required(true).takes_value(true))
                 .arg(
                     Arg::new("opt")
-                        .about("Provide additional input for some keys")
+                        .help("Provide additional input for some keys")
                         .takes_value(true),
                 ),
         )
@@ -96,7 +96,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
             App::new("enable")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)
-                .about("Turn off a given features")
+                .help("Turn off a given features")
                 .arg(
                     Arg::new("key")
                         .required(true)
@@ -108,7 +108,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
             App::new("disable")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)
-                .about("Turn off a given features")
+                .help("Turn off a given features")
                 .arg(
                     Arg::new("key")
                         .required(true)
@@ -120,7 +120,7 @@ pub fn build<'a>(_s: &str) -> App<'a> {
             App::new("toggle")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)
-                .about("Toggle the state of a feature")
+                .help("Toggle the state of a feature")
                 .arg(
                     Arg::new("key")
                         .required(true)
@@ -132,12 +132,12 @@ pub fn build<'a>(_s: &str) -> App<'a> {
             App::new("config")
                 .setting(AppSettings::ArgRequiredElseHelp)
                 .setting(AppSettings::ColoredHelp)
-                .about("Interact with the buds configuration")
+                .help("Interact with the buds configuration")
                 .subcommand(
                     App::new("set")
                         .setting(AppSettings::ArgRequiredElseHelp)
                         .setting(AppSettings::ColoredHelp)
-                        .about("Set a config value")
+                        .help("Set a config value")
                         .arg(
                             Arg::new("key")
                                 .required(true)
@@ -155,13 +155,13 @@ pub fn build<'a>(_s: &str) -> App<'a> {
         // Connect
         .subcommand(
             App::new("connect")
-                .about("Connect your earbuds")
+                .help("Connect your earbuds")
                 .setting(AppSettings::ColoredHelp),
         )
         // Disconnect
         .subcommand(
             App::new("disconnect")
-                .about("Disconnect your earbuds")
+                .help("Disconnect your earbuds")
                 .setting(AppSettings::ColoredHelp),
         )
 }

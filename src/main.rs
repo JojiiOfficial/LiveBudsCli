@@ -3,10 +3,10 @@ mod cmd;
 mod daemon;
 mod daemon_utils;
 
-use clap::{App, ArgMatches};
-use clap_generate::{
+use clap::{ArgMatches, Command};
+use clap_complete::{
     generate,
-    generators::{Bash, Elvish, Fish, PowerShell, Zsh},
+    shells::{Bash, Elvish, Fish, PowerShell, Zsh},
     Generator,
 };
 use cmd::socket_client::SocketClient;
@@ -153,15 +153,15 @@ fn generate_completions(generator: &str) {
     let s = "";
     let mut app = cli::build(s);
     match generator {
-        "bash" => print_completions::<Bash>(&mut app),
-        "elvish" => print_completions::<Elvish>(&mut app),
-        "fish" => print_completions::<Fish>(&mut app),
-        "powershell" => print_completions::<PowerShell>(&mut app),
-        "zsh" => print_completions::<Zsh>(&mut app),
+        "bash" => print_completions(Bash, &mut app),
+        "elvish" => print_completions(Elvish, &mut app),
+        "fish" => print_completions(Fish, &mut app),
+        "powershell" => print_completions(PowerShell, &mut app),
+        "zsh" => print_completions(Zsh, &mut app),
         _ => println!("Unknown generator"),
     }
 }
 
-fn print_completions<G: Generator>(app: &mut App) {
-    generate::<G, _>(app, app.get_name().to_string(), &mut std::io::stdout());
+fn print_completions<G: Generator>(gen: G, cmd: &mut Command) {
+    generate(gen, cmd, cmd.get_name().to_string(), &mut std::io::stdout());
 }
