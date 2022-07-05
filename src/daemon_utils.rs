@@ -75,6 +75,6 @@ pub fn kill<P: AsRef<Path>>(quiet: bool, daemon_path: P) {
         }
 
         // Hacky way not to display annoying cargo warnings
-        try_delete_socket(daemon_path).unwrap_or_default();
+        try_delete_socket(daemon_path).unwrap();
     }
 }

@@ -7,6 +7,7 @@ use super::{anc, extended_status_update, get_all_data, status_update, touchpad};
 
 use async_std::io::prelude::*;
 use async_std::sync::Mutex;
+use galaxy_buds_rs::message::debug::GetAllData;
 use galaxy_buds_rs::{
     message::{self, ids, Message, Payload},
     model::Model,
@@ -103,7 +104,10 @@ pub async fn start_listen(
                 }
 
                 ids::DEBUG_GET_ALL_DATA => {
-                    get_all_data::handle(message.into(), info);
+                    let dbg_data: Option<GetAllData> = message.into();
+                    if let Some(data) = dbg_data {
+                        get_all_data::handle(data, info);
+                    }
                 }
 
                 ids::AMBIENT_MODE_UPDATED => {

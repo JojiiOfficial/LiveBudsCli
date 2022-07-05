@@ -10,6 +10,7 @@ use blurz::{
     BluetoothSession,
 };
 use galaxy_buds_rs::model::Model;
+use log::debug;
 
 use std::sync::mpsc::Sender;
 use std::time::Duration;
@@ -102,18 +103,22 @@ pub fn run(sender: Sender<ConnectionEventData>) {
 fn check_device(sender: &Sender<ConnectionEventData>, session: &BluetoothSession, device: String) {
     let device = BluetoothDevice::new(session, device);
 
-    if is_supported_pair_of_buds(&device) {
-        sender
-            .send(ConnectionEventData {
-                address: device.get_address().unwrap(),
-                model: name_to_model(device.get_name().unwrap().as_str()),
-            })
-            .unwrap();
+    if !supported_device(&device) {
+        let name = device.get_name().unwrap();
+        debug!("Not supported: {name}");
+        return;
     }
+
+    sender
+        .send(ConnectionEventData {
+            address: device.get_address().unwrap(),
+            model: name_to_model(device.get_name().unwrap().as_str()),
+        })
+        .unwrap();
 }
 
 /// Checks whether a device is a pair of buds live
-pub fn is_supported_pair_of_buds(device: &BluetoothDevice) -> bool {
+pub fn supported_device(device: &BluetoothDevice) -> bool {
     device
         .get_uuids()
         .unwrap()
@@ -131,6 +136,8 @@ fn name_to_model(device_name: &str) -> Model {
         Model::BudsPro
     } else if device_name.contains("buds+") {
         Model::BudsPlus
+    } else if device_name.contains("buds2") {
+        Model::Buds2
     } else {
         Model::Buds
     }

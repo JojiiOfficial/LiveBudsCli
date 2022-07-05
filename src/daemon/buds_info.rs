@@ -10,7 +10,7 @@ use galaxy_buds_rs::{
     message::{self, debug},
     model::Feature,
 };
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Informations about a connected pair
 /// of Galaxy Buds live
@@ -124,6 +124,7 @@ impl BudsInfo {
                 }
             }
             Model::Buds => 3,
+            Model::Buds2 => 3,
         }
     }
 
@@ -213,4 +214,5 @@ enum DefModel {
     BudsPlus,
     BudsLive,
     BudsPro,
+    Buds2,
 }

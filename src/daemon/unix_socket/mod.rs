@@ -4,7 +4,7 @@ pub mod request_handler;
 mod set_value;
 pub mod socket;
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Unix connection request
 #[derive(Debug, Clone, Serialize, Deserialize)]

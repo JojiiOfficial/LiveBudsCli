@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use async_std::fs::{self, File};
 use async_std::io::prelude::*;

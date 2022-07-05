@@ -7,6 +7,7 @@ use async_std::sync::Arc;
 use async_std::sync::Mutex;
 use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
 use galaxy_buds_rs::model::Model;
+use log::info;
 
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -164,10 +165,10 @@ pub async fn run(
                 continue;
             }
 
-            println!("Connected successfully to Buds live!");
-
             // Add device to the connection handler
             connection_handler.add_device(i.address.to_owned());
+
+            info!("Connected successfully to {}", i.model);
 
             connection
         };

@@ -20,6 +20,11 @@ const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 async fn main() {
     setup_panic!();
 
+    pretty_env_logger::formatted_builder()
+        .filter_module("earbuds", log::LevelFilter::Info)
+        .filter_module("galaxy_buds_rs", log::LevelFilter::Info)
+        .init();
+
     let clap = {
         let s = "";
         cli::build(&s).get_matches()
@@ -58,11 +63,13 @@ async fn main() {
     if clap.is_present("kill-daemon") {
         return;
     }
+
     // Run generator command if desired
     if let Some(generator) = clap.value_of("generator") {
         generate_completions(generator);
         return;
     }
+
     // From here we need a running daemon, so ensure one is running
     if daemon_utils::check_running(DAEMON_PATH.to_owned()).is_ok() {
         if !daemon_utils::start() {
@@ -72,7 +79,7 @@ async fn main() {
                 println!("Daemon started successfully")
             }
             // TODO wait for deamon to be ready
-            std::thread::sleep(std::time::Duration::from_millis(800));
+            std::thread::sleep(std::time::Duration::from_millis(1000));
         }
     }
     run_subcommands(clap);
