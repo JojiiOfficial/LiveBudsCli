@@ -34,7 +34,10 @@ async fn main() {
     if clap.is_present("kill-daemon")
         && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err()
     {
-        daemon_utils::kill(clap.is_present("kill-daemon"), DAEMON_PATH);
+        if !daemon_utils::kill(clap.is_present("kill-daemon"), DAEMON_PATH) {
+            println!("Couldn't kill daemon");
+            return;
+        }
     }
 
     // Run daemon on -k

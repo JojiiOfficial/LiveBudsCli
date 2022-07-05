@@ -58,10 +58,11 @@ pub fn try_delete_socket<P: AsRef<Path>>(p: P) -> Result<(), String> {
 }
 
 // Kill a daemon
-pub fn kill<P: AsRef<Path>>(quiet: bool, daemon_path: P) {
+pub fn kill<P: AsRef<Path>>(quiet: bool, daemon_path: P) -> bool {
     let daemon_path = daemon_path.as_ref();
 
     let pids = ofiles::opath(daemon_path);
+    println!("pids: {pids:?}");
     if let Ok(pids) = pids {
         let u: u32 = (*pids.get(0).unwrap()).into();
         if let Err(err) = nix::sys::signal::kill(
@@ -76,5 +77,8 @@ pub fn kill<P: AsRef<Path>>(quiet: bool, daemon_path: P) {
 
         // Hacky way not to display annoying cargo warnings
         try_delete_socket(daemon_path).unwrap();
+        return true;
     }
+
+    false
 }

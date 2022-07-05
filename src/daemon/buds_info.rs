@@ -3,12 +3,15 @@ use std::time::SystemTime;
 use async_std::io::prelude::*;
 use async_std::os::unix::net::UnixStream;
 use galaxy_buds_rs::{
-    message::bud_property::{EqualizerType, Placement, TouchpadOption},
-    model::Model,
-};
-use galaxy_buds_rs::{
     message::{self, debug},
     model::Feature,
+};
+use galaxy_buds_rs::{
+    message::{
+        bud_property::{EqualizerType, Placement, TouchpadOption},
+        extended_status_updated::ExtTapLockStatus,
+    },
+    model::Model,
 };
 use serde::{Deserialize, Serialize};
 
@@ -60,6 +63,7 @@ pub struct BudsInfoInner {
     pub ambient_sound_enabled: bool,
     pub ambient_sound_volume: u8,
     pub extra_high_ambient_volume: bool,
+    pub tab_lock_status: ExtTapLockStatus,
 }
 
 impl BudsInfo {
@@ -86,6 +90,7 @@ impl BudsInfo {
                 ambient_sound_enabled: false,
                 ambient_sound_volume: 0,
                 extra_high_ambient_volume: false,
+                tab_lock_status: ExtTapLockStatus::default(),
             },
             last_debug: SystemTime::now(),
             left_tp_hold_count: 0,
@@ -96,7 +101,7 @@ impl BudsInfo {
 
     // shortcut for self.inner.model.has_feature
     pub fn has_feature(&self, feature: Feature) -> bool {
-        self.inner.model.has_feature(feature)
+        self.inner.has_feature(feature)
     }
 
     /// resets the last_tp_update value
@@ -144,6 +149,13 @@ impl BudsInfo {
     pub async fn request_debug_data(&mut self) -> Result<(), String> {
         self.last_debug = SystemTime::now();
         self.send(debug::new(debug::DebugVariant::GetAllData)).await
+    }
+}
+
+impl BudsInfoInner {
+    // shortcut for self.inner.model.has_feature
+    pub fn has_feature(&self, feature: Feature) -> bool {
+        self.model.has_feature(feature)
     }
 }
 

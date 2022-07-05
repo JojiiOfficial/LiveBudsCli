@@ -1,15 +1,15 @@
-use super::super::{bt_connection_listener::BudsConnection, rfcomm_connector::ConnHandler};
 use super::{
-    super::super::{buds_config::Config, buds_info::BudsInfo},
-    ambient_mode,
+    super::{
+        super::{buds_config::Config, buds_info::BudsInfo},
+        bt_connection_listener::BudsConnection,
+        rfcomm_connector::ConnHandler,
+    },
+    ambient_mode, anc, extended_status_update, get_all_data, status_update, touchpad,
 };
-use super::{anc, extended_status_update, get_all_data, status_update, touchpad};
 
-use async_std::io::prelude::*;
-use async_std::sync::Mutex;
-use galaxy_buds_rs::message::debug::GetAllData;
+use async_std::{io::prelude::*, sync::Mutex};
 use galaxy_buds_rs::{
-    message::{self, ids, Message, Payload},
+    message::{self, debug::GetAllData, ids, usage_report::UsageReport, Message, Payload},
     model::Model,
 };
 
@@ -116,6 +116,11 @@ pub async fn start_listen(
 
                 ids::NOISE_REDUCTION_MODE_UPDATE => {
                     anc::handle(message.into(), info);
+                }
+
+                ids::USAGE_REPORT => {
+                    let report = UsageReport::new(message.get_payload_bytes());
+                    println!("{report:#?}");
                 }
 
                 _ => (),

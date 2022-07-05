@@ -23,6 +23,7 @@ fn update_extended_status(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
     info.inner.noise_reduction = update.noise_reduction;
     info.inner.touchpad_option_left = update.touchpad_option_left;
     info.inner.touchpad_option_right = update.touchpad_option_right;
+    info.inner.tab_lock_status = update.tap_lock_status;
 
     // Ambient mode for buds
     if info.inner.model == Model::BudsPlus {

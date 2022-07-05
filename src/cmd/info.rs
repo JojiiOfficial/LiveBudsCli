@@ -5,6 +5,7 @@ use crate::daemon::buds_info::BudsInfoInner;
 use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
 use clap::ArgMatches;
 use galaxy_buds_rs::message::bud_property::Placement;
+use galaxy_buds_rs::model::Feature::ExtTouchpadLock;
 
 /// show status of given address
 pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
@@ -52,13 +53,47 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
             "Disabled"
         }
     });
-    println!("Touchpads:\t{}", {
-        if res.touchpads_blocked {
-            "Blocked"
-        } else {
-            "Enabled"
+
+    let extendet_tp_lock = res.has_feature(ExtTouchpadLock);
+
+    if extendet_tp_lock {
+        let mut v = vec![];
+        let l = res.tab_lock_status;
+
+        if l.tap_on {
+            v.push("Tap");
         }
-    });
+
+        if l.double_tap_on {
+            v.push("Doubletap");
+        }
+
+        if l.triple_tap_on {
+            v.push("Triple tap")
+        }
+
+        if l.touch_an_hold_on {
+            v.push("Tap and hold");
+        }
+
+        let s;
+        if v.is_empty() {
+            s = String::from("Disabled");
+        } else {
+            s = v.join(", ");
+        }
+
+        println!("Touchpads:\t{}", s);
+    } else {
+        println!("Touchpads:\t{}", {
+            if res.touchpads_blocked {
+                "Blocked"
+            } else {
+                "Enabled"
+            }
+        });
+    }
+
     println!("Left option:\t{:?}", res.touchpad_option_left);
     println!("Right option:\t{:?}", res.touchpad_option_right);
 

@@ -1,14 +1,18 @@
-use super::request_handler::get_err;
-use super::{Request, Response};
-
-use super::super::buds_info::{BudsInfo, BudsInfoInner};
-use super::super::utils;
+use super::{
+    super::{
+        buds_info::{BudsInfo, BudsInfoInner},
+        utils,
+    },
+    request_handler::get_err,
+    Request, Response,
+};
 
 use galaxy_buds_rs::{
     message::{
         ambient_mode,
         bud_property::{BudProperty, EqualizerType, Side, TouchpadOption},
-        lock_touchpad, set_noise_reduction, set_touchpad_option,
+        lock_touchpad::{self, ExtLockTouchpad},
+        set_noise_reduction, set_touchpad_option,
         simple::new_equalizer,
     },
     model::Feature,
@@ -55,15 +59,7 @@ async fn set_buds_option(
         "noise_reduction" => set_anc(value, buds_info).await,
 
         // Set Touchpad lock
-        "lock_touchpad" => {
-            let value = utils::str_to_bool(&value);
-            let msg = lock_touchpad::new(value);
-            let res = buds_info.send(msg).await;
-            if res.is_ok() {
-                buds_info.inner.touchpads_blocked = value;
-            }
-            res
-        }
+        "lock_touchpad" => lock_touchpad(value, buds_info, opt_param3).await,
 
         // Set EqualizerType command
         "equalizer" => match value.parse::<u8>() {
@@ -90,6 +86,61 @@ async fn set_buds_option(
 
         _ => Err("Invalid key to set to".to_string()),
     }
+}
+
+async fn lock_touchpad(
+    value: &str,
+    buds_info: &mut BudsInfo,
+    p3: &Option<String>,
+) -> Result<(), String> {
+    if buds_info.has_feature(Feature::ExtTouchpadLock) {
+        return lock_touchpad_ext(value, buds_info, p3).await;
+    }
+
+    let value = utils::str_to_bool(&value);
+    let msg = lock_touchpad::new(value);
+    buds_info.send(msg).await?;
+    buds_info.inner.touchpads_blocked = value;
+    Ok(())
+}
+
+async fn lock_touchpad_ext(
+    value: &str,
+    buds_info: &mut BudsInfo,
+    p3: &Option<String>,
+) -> Result<(), String> {
+    let mut msg = ExtLockTouchpad::from_ext_tap_lock_status(buds_info.inner.tab_lock_status);
+
+    // 'value' is true if lock but we want to know when to enable them here
+    let val = !utils::str_to_bool(&value);
+
+    if let Some(p3) = p3 {
+        match p3.to_lowercase().as_str() {
+            "tap" => msg.tap_on = val,
+            "doubletap" | "dtap" => msg.double_tap = val,
+            "tripletap" | "ttap" => msg.tripple_tap = val,
+            "hold" => msg.touch_and_hold = val,
+            _ => {
+                println!("Unsupported touchpad function {p3:?}. Choose from {{tap, doubletap, tripletap, hold}}");
+                return Ok(());
+            }
+        };
+    } else {
+        msg.tap_on = val;
+        msg.touch_and_hold = val;
+    }
+    msg.touch_controls = true;
+
+    println!("{msg:#?}");
+    buds_info.send(msg).await?;
+
+    buds_info.inner.tab_lock_status.tap_on = msg.tap_on;
+    buds_info.inner.tab_lock_status.triple_tap_on = msg.tripple_tap;
+    buds_info.inner.tab_lock_status.double_tap_on = msg.double_tap;
+    buds_info.inner.tab_lock_status.touch_controls_on = msg.touch_controls;
+    buds_info.inner.tab_lock_status.touch_an_hold_on = msg.touch_and_hold;
+
+    Ok(())
 }
 
 /// Set the anc status
