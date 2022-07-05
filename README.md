@@ -7,7 +7,7 @@
 # LiveBudsCli
 A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live), [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/), [Galaxy Buds Pro](https://www.samsung.com/us/mobile/audio/galaxy-buds-pro/) and [Galaxy Buds 2](https://www.samsung.com/us/mobile-audio/galaxy-buds2/)
 
-`Note: This requires your buds to be up to date. Old firmware aren't supported`
+`Note: This requires your buds to be up to date. Buds with old firmware aren't supported`
 
 <table>
 <tr>
