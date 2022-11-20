@@ -15,7 +15,7 @@ galaxy_buds_rs = { git = "https://github.com/JojiiOfficial/GalaxyBuds-rs" }
 #galaxy_buds_rs = "0.2.10"
 #galaxy_buds_rs = { path = "../GalaxyBuds-rs" }
 clap = { version = "3.2.8", features = ["std"] }
-clap_complete = "3.2.3"
+clap_complete = "3.2.5"
 async-std = { version = "1.12.0", features = ["attributes"] }
 bluetooth-serial-port-async = "0.6.3"
 blurz = "0.4.0"
