@@ -120,6 +120,13 @@ impl BudsInfo {
                     3
                 }
             }
+            Model::BudsPro2 => {
+                if self.has_feature(Feature::ExtraHighAmbientVolume) {
+                    4
+                } else {
+                    3
+                }
+            }
             Model::BudsLive => 0,
             Model::BudsPlus => {
                 if self.has_feature(Feature::ExtraHighAmbientVolume) {
@@ -226,5 +233,6 @@ enum DefModel {
     BudsPlus,
     BudsLive,
     BudsPro,
+    BudsPro2,
     Buds2,
 }
