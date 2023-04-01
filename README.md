@@ -39,10 +39,6 @@ A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mo
 
 # Install
 
-
-## Pacman repo
-You can get it precompiled from my [pacman repository](https://repo.jojii.de)
-
 ## AUR
 `yay -S earbuds`
 
