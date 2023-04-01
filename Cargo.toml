@@ -4,7 +4,7 @@ version = "0.1.9"
 authors = ["jojii <jojii@gmx.net>"]
 edition = "2018"
 description = "Control your galaxy buds live via cli"
-repository = "https://github.com/george124816/LiveBudsCli"
+repository = "https://github.com/JojiiOfficial/LiveBudsCli"
 license = "GPL-3.0"
 readme = "README.md"
 
