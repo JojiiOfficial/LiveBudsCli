@@ -5,7 +5,7 @@
 [![earbuds-git](https://img.shields.io/aur/version/earbuds-git?style=flat-square&label=earbuds-git&logo=arch-linux)](https://aur.archlinux.org/packages/earbuds-git/)
 
 # LiveBudsCli
-A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live), [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/), [Galaxy Buds Pro](https://www.samsung.com/us/mobile/audio/galaxy-buds-pro/) and [Galaxy Buds 2](https://www.samsung.com/us/mobile-audio/galaxy-buds2/)
+A free cli tool to control your [Galaxy buds live](https://www.samsung.com/us/mobile-audio/galaxy-buds-live), [Galaxy Buds+](https://www.samsung.com/us/mobile/audio/galaxy-buds-plus/), [Galaxy Buds Pro](https://www.samsung.com/us/mobile/audio/galaxy-buds-pro/), [Galaxy Buds 2](https://www.samsung.com/us/mobile-audio/galaxy-buds2/) and [Galaxy Buds 2 Pro](https://www.samsung.com/us/mobile-audio/galaxy-buds2-pro/)
 
 `Note: This requires your buds to be up to date. Buds with old firmware aren't supported`
 

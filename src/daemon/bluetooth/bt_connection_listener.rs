@@ -134,6 +134,8 @@ fn name_to_model(device_name: &str) -> Model {
         Model::BudsLive
     } else if device_name.contains("buds pro") {
         Model::BudsPro
+    } else if device_name.contains("buds 2 pro") {
+        Model::BudsPro2
     } else if device_name.contains("buds+") {
         Model::BudsPlus
     } else if device_name.contains("buds2") {
