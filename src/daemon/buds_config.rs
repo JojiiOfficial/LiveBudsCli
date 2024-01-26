@@ -164,7 +164,11 @@ impl Config {
 
     // Create missing folders and return the config file
     pub async fn get_config_file() -> Result<PathBuf, String> {
-        let conf_dir: PathBuf = get_home_dir().unwrap().join(".config").join("livebuds");
+        let conf_home: PathBuf = match get_xdg_config() {
+            Some(x) => x,
+            None => get_home_dir().unwrap().join(".config")
+        };
+        let conf_dir: PathBuf = conf_home.join("livebuds");
 
         if !conf_dir.exists().await {
             fs::create_dir_all(&conf_dir)
@@ -174,6 +178,13 @@ impl Config {
 
         Ok(conf_dir.join("config.toml"))
     }
+}
+
+pub fn get_xdg_config() -> Option<PathBuf> {
+    std::env::var_os("XDG_CONFIG_HOME")
+        .and_then(|xdg| if xdg.is_empty() { None } else { Some(xdg) })
+        .or(None)
+        .map(PathBuf::from)
 }
 
 pub fn get_home_dir() -> Option<PathBuf> {
