@@ -29,7 +29,7 @@ mpris = "2.0.0-rc2"
 nix = "0.24.1"
 rust-pulsectl-fork = { version = "0.2.12", optional = true }
 human-panic = "1.0.3"
-log = "0.4.17"
+log = "0.4.21"
 pretty_env_logger = "0.4.0"
 
 [features]
