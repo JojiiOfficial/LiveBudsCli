@@ -21,7 +21,7 @@ bluetooth-serial-port-async = "0.6.3"
 blurz = "0.4.0"
 ofiles = "0.2.0"
 serde = { version = "1.0.139", features = ["derive"] }
-serde_json = "1.0.82"
+serde_json = "1.0.116"
 notify-rust = "4.5.8"
 toml = "0.5.9"
 mpris = "2.0.0-rc2"
