@@ -23,7 +23,7 @@ ofiles = "0.2.0"
 serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.116"
 notify-rust = "4.11.0"
-toml = "0.5.11"
+toml = "0.8.0"
 mpris = "2.0.1"
 #clap_generate = "3.0.3"
 nix = "0.24.3"
