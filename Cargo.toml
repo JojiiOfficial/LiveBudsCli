@@ -26,7 +26,7 @@ notify-rust = "4.11.0"
 toml = "0.5.11"
 mpris = "2.0.1"
 #clap_generate = "3.0.3"
-nix = "0.24.3"
+nix = "0.29.0"
 rust-pulsectl-fork = { version = "0.2.12", optional = true }
 human-panic = "1.2.3"
 log = "0.4.21"
