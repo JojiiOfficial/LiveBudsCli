@@ -7,7 +7,7 @@ use galaxy_buds_rs::message::bud_property::{BudProperty, EqualizerType, Touchpad
 
 /// Set a value
 pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
-    let skey = app.value_of("key").unwrap();
+    let skey = app.get_one::<String>("key").unwrap();
     let key = match Key::parse(skey) {
         Some(k) => k,
         None => {
@@ -31,8 +31,8 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
     );
 
     // Set opt param if present
-    if app.is_present("opt") {
-        request.opt_param3 = app.value_of("opt").map(|s| s.to_owned());
+    if app.contains_id("opt") {
+        request.opt_param3 = app.get_one::<String>("opt").cloned();
     }
 
     // Do unix_socket request

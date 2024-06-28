@@ -22,7 +22,7 @@ use super::rfcomm_connector::ConnectionEventData;
 pub struct BudsConnection {
     pub addr: String,
     pub socket: BtSocket,
-    pub fd: i32,
+    // pub fd: i32,
 }
 
 /// Listens for new Bluethooth connections

@@ -3,16 +3,12 @@ use clap::ArgMatches;
 
 // return ture if user wants the data in json
 pub fn print_as_json(app: &ArgMatches) -> bool {
-    app.is_present("output") && app.value_of("output").unwrap() == "json"
+    app.contains_id("output") && app.get_one::<String>("output").unwrap() == "json"
 }
 
 // Get the device from ArgMatches or none
 pub fn get_device_from_app(app: &ArgMatches) -> Option<String> {
-    if app.is_present("device") {
-        app.value_of("device").map(|s| s.to_owned())
-    } else {
-        None
-    }
+        app.get_one::<String>("device").cloned()
 }
 
 /// Unwrap a response

@@ -26,49 +26,48 @@ async fn main() {
         .init();
 
     let clap = {
-        let s = "";
-        cli::build(&s).get_matches()
+        cli::build().get_matches()
     };
 
     // Kill daemon if desired and running
-    if clap.is_present("kill-daemon")
+    if clap.contains_id("kill-daemon")
         && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err()
     {
-        if !daemon_utils::kill(clap.is_present("kill-daemon"), DAEMON_PATH) {
+        if !daemon_utils::kill(clap.contains_id("kill-daemon"), DAEMON_PATH) {
             println!("Couldn't kill daemon");
             return;
         }
     }
 
     // Run daemon on -k
-    if clap.is_present("daemon") {
+    if clap.contains_id("daemon") {
         // Check if a daemon is already running
         if let Err(err) = daemon_utils::check_running(DAEMON_PATH) {
             // Don't print error output if -q is passed
-            if !clap.is_present("quiet") {
+            if !clap.contains_id("quiet") {
                 eprintln!("{}", err);
             }
             exit(1);
         }
         // Block if --no-fork is provided
-        if clap.is_present("no-fork") {
+        if clap.contains_id("no-fork") {
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
         } else
         // Start daemon detached
-        if daemon_utils::start() && !clap.is_present("quiet") {
+        if daemon_utils::start() && !clap.contains_id("quiet") {
             println!("Daemon started successfully")
         }
         return;
     }
     // Late return to allow a
     // combination of -k and -d
-    if clap.is_present("kill-daemon") {
+    if clap.contains_id("kill-daemon") {
         return;
     }
 
     // Run generator command if desired
-    if let Some(generator) = clap.value_of("generator") {
+    if let Some(generator) = clap.get_one::<String>("generator") {
         generate_completions(generator);
         return;
     }
@@ -78,7 +77,7 @@ async fn main() {
         if !daemon_utils::start() {
             exit(1);
         } else {
-            if !clap.is_present("quiet") {
+            if !clap.contains_id("quiet") {
                 println!("Daemon started successfully")
             }
             // TODO wait for deamon to be ready
@@ -109,7 +108,7 @@ fn run_subcommands(clap: ArgMatches) {
             &mut socket_client,
             subcommand,
             false,
-            subcommand.value_of("value").unwrap_or_default(),
+            subcommand.get_one::<String>("value").expect("required"),
         );
     }
 
@@ -129,7 +128,7 @@ fn run_subcommands(clap: ArgMatches) {
             &mut socket_client,
             subcommand,
             true,
-            subcommand.value_of("value").unwrap_or_default(),
+            subcommand.get_one::<String>("value").expect("required"),
         );
     }
 
@@ -150,8 +149,7 @@ fn run_subcommands(clap: ArgMatches) {
 }
 
 fn generate_completions(generator: &str) {
-    let s = "";
-    let mut app = cli::build(s);
+    let mut app = cli::build();
     match generator {
         "bash" => print_completions(Bash, &mut app),
         "elvish" => print_completions(Elvish, &mut app),
