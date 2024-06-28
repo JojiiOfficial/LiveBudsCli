@@ -25,9 +25,7 @@ async fn main() {
         .filter_module("galaxy_buds_rs", log::LevelFilter::Info)
         .init();
 
-    let clap = {
-        cli::build().get_matches()
-    };
+    let clap = { cli::build().get_matches() };
 
     // Kill daemon if desired and running
     if clap.contains_id("kill-daemon")

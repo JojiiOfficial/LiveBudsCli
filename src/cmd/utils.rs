@@ -8,7 +8,7 @@ pub fn print_as_json(app: &ArgMatches) -> bool {
 
 // Get the device from ArgMatches or none
 pub fn get_device_from_app(app: &ArgMatches) -> Option<String> {
-        app.get_one::<String>("device").cloned()
+    app.get_one::<String>("device").cloned()
 }
 
 /// Unwrap a response
