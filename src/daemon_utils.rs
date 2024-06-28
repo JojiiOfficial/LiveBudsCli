@@ -4,6 +4,11 @@ use std::{
     process::{exit, Command, Stdio},
 };
 
+use nix::{
+    sys::signal::{self, SIGTERM},
+    unistd::Pid,
+};
+
 /// Start the daemon detached from the current cli
 pub fn start() -> bool {
     let curr_exe = env::current_exe().expect("Couldn't get current executable!");
@@ -65,10 +70,7 @@ pub fn kill<P: AsRef<Path>>(quiet: bool, daemon_path: P) -> bool {
     println!("pids: {pids:?}");
     if let Ok(pids) = pids {
         let u: u32 = (*pids.get(0).unwrap()).into();
-        if let Err(err) = nix::sys::signal::kill(
-            nix::unistd::Pid::from_raw(u as i32),
-            nix::sys::signal::SIGTERM,
-        ) {
+        if let Err(err) = signal::kill(Pid::from_raw(u as i32), SIGTERM) {
             eprintln!("Error killing process: {:?}", err);
             exit(1);
         } else if !quiet {

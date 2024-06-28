@@ -1,10 +1,9 @@
-use clap::{App, AppSettings, Arg, ValueHint};
+use clap::{Arg, Command, ValueHint};
 
-pub fn build<'a>(_s: &str) -> App<'a> {
-    App::new("earbuds")
-        .setting(AppSettings::TrailingVarArg)
-        .setting(AppSettings::ColoredHelp)
-        .setting(AppSettings::ArgRequiredElseHelp)
+pub fn build<'a>() -> Command {
+    Command::new("earbuds")
+        .arg_required_else_help(true)
+        .about("ok")
         //.version(crate_version!())
         .author("Jojii S")
         //.help("Control your Galaxy Buds live from cli")
@@ -20,13 +19,13 @@ pub fn build<'a>(_s: &str) -> App<'a> {
                 .short('o')
                 .long("output")
                 .global(true)
-                .possible_values(&["json", "normal"]),
+                .value_parser(["json", "normal"]),
         )
         .arg(
             Arg::new("generator")
                 .long("generate")
                 .help("Generate completion scripts for a given type of shell")
-                .possible_values(&["bash", "elvish", "fish", "powershell", "zsh"]),
+                .value_parser(["bash", "elvish", "fish", "powershell", "zsh"]),
         )
         .arg(
             Arg::new("daemon")
@@ -57,111 +56,80 @@ pub fn build<'a>(_s: &str) -> App<'a> {
                 .global(true)
                 .help("Specify the device to use")
                 .short('s')
-                .takes_value(true)
+                .num_args(1)
                 .value_hint(ValueHint::Unknown)
                 .long("device"),
         )
         .subcommand(
-            App::new("status")
-                .setting(AppSettings::ColoredHelp)
+            Command::new("status")
                 .alias("info")
-                .help("Display informations for a given device"),
+                .about("Display informations for a given device"),
         )
         .subcommand(
-            App::new("set")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .help("Turn on/off features and control the equalizer setting")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&[
-                            "equalizer",
-                            "anc",
-                            "touchpadlock",
-                            "touchpad",
-                            "ambientsound",
-                            "tap-action",
-                        ]),
-                )
-                .arg(Arg::new("value").required(true).takes_value(true))
+            Command::new("set")
+                .about("Turn on/off features and control the equalizer setting")
+                .arg(Arg::new("key").required(true).num_args(1).value_parser([
+                    "equalizer",
+                    "anc",
+                    "touchpadlock",
+                    "touchpad",
+                    "ambientsound",
+                    "tap-action",
+                ]))
+                .arg(Arg::new("value").required(true).num_args(1))
                 .arg(
                     Arg::new("opt")
                         .help("Provide additional input for some keys")
-                        .takes_value(true),
+                        .num_args(1),
                 ),
         )
         .subcommand(
-            App::new("enable")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .help("Turn off a given features")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&["anc", "touchpad"]),
-                ),
+            Command::new("enable").about("Turn on a given feature").arg(
+                Arg::new("key")
+                    .required(true)
+                    .num_args(1)
+                    .value_parser(["anc", "touchpad"]),
+            ),
         )
         .subcommand(
-            App::new("disable")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .help("Turn off a given features")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&["equalizer", "anc", "touchpad"]),
-                ),
+            Command::new("disable")
+                .arg_required_else_help(true)
+                .about("Turn off a given feature")
+                .arg(Arg::new("key").required(true).num_args(1).value_parser([
+                    "equalizer",
+                    "anc",
+                    "touchpad",
+                ])),
         )
         .subcommand(
-            App::new("toggle")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .help("Toggle the state of a feature")
-                .arg(
-                    Arg::new("key")
-                        .required(true)
-                        .takes_value(true)
-                        .possible_values(&["anc", "touchpadlock", "touchpad"]),
-                ),
+            Command::new("toggle")
+                .arg_required_else_help(true)
+                .about("Toggle the state of a feature")
+                .arg(Arg::new("key").required(true).num_args(1).value_parser([
+                    "anc",
+                    "touchpadlock",
+                    "touchpad",
+                ])),
         )
         .subcommand(
-            App::new("config")
-                .setting(AppSettings::ArgRequiredElseHelp)
-                .setting(AppSettings::ColoredHelp)
-                .help("Interact with the buds configuration")
+            Command::new("config")
+                .arg_required_else_help(true)
+                .about("Interact with the buds configuration")
                 .subcommand(
-                    App::new("set")
-                        .setting(AppSettings::ArgRequiredElseHelp)
-                        .setting(AppSettings::ColoredHelp)
-                        .help("Set a config value")
-                        .arg(
-                            Arg::new("key")
-                                .required(true)
-                                .takes_value(true)
-                                .possible_values(&[
-                                    "auto-pause",
-                                    "auto-play",
-                                    "low-battery-notification",
-                                    "smart-sink",
-                                ]),
-                        )
-                        .arg(Arg::new("value").required(true).takes_value(true)),
+                    Command::new("set")
+                        .arg_required_else_help(true)
+                        .about("Set a config value")
+                        .arg(Arg::new("key").required(true).num_args(1).value_parser([
+                            "auto-pause",
+                            "auto-play",
+                            "low-battery-notification",
+                            "smart-sink",
+                        ]))
+                        .arg(Arg::new("value").required(true).num_args(1)),
                 ),
         )
         // Connect
-        .subcommand(
-            App::new("connect")
-                .help("Connect your earbuds")
-                .setting(AppSettings::ColoredHelp),
-        )
+        .subcommand(Command::new("connect").about("Connect your earbuds"))
         // Disconnect
-        .subcommand(
-            App::new("disconnect")
-                .help("Disconnect your earbuds")
-                .setting(AppSettings::ColoredHelp),
-        )
+        .subcommand(Command::new("disconnect").about("Disconnect your earbuds"))
 }

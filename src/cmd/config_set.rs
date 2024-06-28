@@ -6,8 +6,12 @@ use clap::ArgMatches;
 
 /// Set a value
 pub fn set(sc: &mut SocketClient, app: &ArgMatches) {
-    let value = app.value_of("value").unwrap_or_default();
-    let skey = app.value_of("key").unwrap();
+    let value = app
+        .get_one::<String>("value")
+        .map(|i| i.as_str())
+        .unwrap_or_default();
+
+    let skey = app.get_one::<String>("key").unwrap();
     let key = match Key::parse(skey) {
         Some(k) => k,
         None => {

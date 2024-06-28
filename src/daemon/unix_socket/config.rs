@@ -28,7 +28,7 @@ pub async fn set_value(payload: &Request, address: String, config: Arc<Mutex<Con
     if cfg.is_none() {
         return get_err("error getting config!");
     }
-    let mut cfg = cfg.unwrap();
+    let cfg = cfg.unwrap();
 
     // Set the right value of the config
     match key.as_str() {
