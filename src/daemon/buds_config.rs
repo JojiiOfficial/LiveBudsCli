@@ -164,7 +164,10 @@ impl Config {
 
     // Create missing folders and return the config file
     pub async fn get_config_file() -> Result<PathBuf, String> {
-        let conf_dir: PathBuf = get_home_dir().unwrap().join(".config").join("livebuds");
+        let conf_home = get_xdg_config()
+            .or_else(|| get_home_dir().map(|i| i.join(".config")))
+            .expect("Can't determine home directory!");
+        let conf_dir = conf_home.join("livebuds");
 
         if !conf_dir.exists().await {
             fs::create_dir_all(&conf_dir)
@@ -176,11 +179,20 @@ impl Config {
     }
 }
 
+pub fn get_xdg_config() -> Option<PathBuf> {
+    try_env_var("XDG_CONFIG_HOME")
+}
+
 pub fn get_home_dir() -> Option<PathBuf> {
-    std::env::var_os("HOME")
-        .and_then(|home| if home.is_empty() { None } else { Some(home) })
-        .or(None)
-        .map(PathBuf::from)
+    try_env_var("HOME")
+}
+
+fn try_env_var(name: &str) -> Option<PathBuf>{
+    let xdg = std::env::var_os(name)?;
+    if xdg.is_empty(){
+        return None;
+    }
+    Some(PathBuf::from(xdg))
 }
 
 impl BudsConfig {
