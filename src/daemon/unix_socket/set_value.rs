@@ -261,7 +261,7 @@ async fn set_ambient_volume_cmd(val: u8, buds_info: &mut BudsInfo) -> Result<(),
 
 /// Checks a given feature and returns an error if the feature is unsupported.
 fn check_feature(buds_info: &BudsInfo, feature: Feature) -> Result<(), String> {
-    if !buds_info.inner.model.has_feature(feature) {
+    if !buds_info.inner.model.has_feature(&feature) {
         Err("Feature not supported by your model".to_string())
     } else {
         Ok(())

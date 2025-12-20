@@ -128,7 +128,7 @@ pub fn supported_device(device: &BluetoothDevice) -> bool {
 
 /// Gives devices model from its name
 fn name_to_model(device_name: &str) -> Model {
-    let device_name = device_name.to_lowercase();
+    let device_name = device_name.trim().to_lowercase();
 
     if device_name.contains("buds live") {
         Model::BudsLive
@@ -140,7 +140,10 @@ fn name_to_model(device_name: &str) -> Model {
         Model::BudsPlus
     } else if device_name.contains("buds2") {
         Model::Buds2
+    } else if device_name.contains("buds3 pro") {
+        Model::Buds3Pro
     } else {
+        println!("Couldn't detect model by name ({device_name:?}). Defaulting to \"Buds\"");
         Model::Buds
     }
 }

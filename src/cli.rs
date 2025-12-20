@@ -1,4 +1,4 @@
-use clap::{Arg, Command, ValueHint};
+use clap::{Arg, ArgAction, Command, ValueHint};
 
 pub fn build<'a>() -> Command {
     Command::new("earbuds")
@@ -31,12 +31,14 @@ pub fn build<'a>() -> Command {
             Arg::new("daemon")
                 .help("Starts the daemon")
                 .long("daemon")
-                .short('d'),
+                .short('d')
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("no-fork")
                 .help("Don't fork the daemon")
-                .long("no-fork"),
+                .long("no-fork")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("kill-daemon")
@@ -49,7 +51,8 @@ pub fn build<'a>() -> Command {
                 .help("Don't print extra output")
                 .short('q')
                 .global(true)
-                .long("quiet"),
+                .long("quiet")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("device")

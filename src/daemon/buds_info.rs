@@ -101,7 +101,7 @@ impl BudsInfo {
 
     // shortcut for self.inner.model.has_feature
     pub fn has_feature(&self, feature: Feature) -> bool {
-        self.inner.has_feature(feature)
+        self.inner.has_feature(&feature)
     }
 
     /// resets the last_tp_update value
@@ -137,6 +137,13 @@ impl BudsInfo {
                     3
                 }
             }
+            Model::Buds3Pro => {
+                if self.has_feature(Feature::ExtraHighAmbientVolume) {
+                    4
+                } else {
+                    3
+                }
+            }
         }
     }
 
@@ -161,7 +168,7 @@ impl BudsInfo {
 
 impl BudsInfoInner {
     // shortcut for self.inner.model.has_feature
-    pub fn has_feature(&self, feature: Feature) -> bool {
+    pub fn has_feature(&self, feature: &Feature) -> bool {
         self.model.has_feature(feature)
     }
 }
@@ -235,4 +242,5 @@ enum DefModel {
     BudsPro,
     Buds2,
     BudsPro2,
+    Buds3Pro,
 }

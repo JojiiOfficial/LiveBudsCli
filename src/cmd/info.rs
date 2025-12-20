@@ -54,7 +54,7 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
         }
     });
 
-    let extendet_tp_lock = res.has_feature(ExtTouchpadLock);
+    let extendet_tp_lock = res.has_feature(&ExtTouchpadLock);
 
     if extendet_tp_lock {
         let mut v = vec![];
