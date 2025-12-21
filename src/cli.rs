@@ -12,7 +12,8 @@ pub fn build<'a>() -> Command {
                 .short('v')
                 .long("verbose")
                 .global(true)
-                .help("Prints informations verbosely"),
+                .help("Prints informations verbosely")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("output")
@@ -44,7 +45,8 @@ pub fn build<'a>() -> Command {
             Arg::new("kill-daemon")
                 .help("Kill the daemon. If used together with -d, the daemon will get restarted")
                 .short('k')
-                .long("kill-daemon"),
+                .long("kill-daemon")
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("quiet")

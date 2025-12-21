@@ -28,8 +28,7 @@ async fn main() {
     let clap = { cli::build().get_matches() };
 
     // Kill daemon if desired and running
-    if clap.contains_id("kill-daemon")
-        && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err()
+    if clap.get_flag("kill-daemon") && daemon_utils::check_running(DAEMON_PATH.to_owned()).is_err()
     {
         if !daemon_utils::kill(clap.contains_id("kill-daemon"), DAEMON_PATH) {
             println!("Couldn't kill daemon");
@@ -38,29 +37,29 @@ async fn main() {
     }
 
     // Run daemon on -k
-    if clap.contains_id("daemon") {
+    if clap.get_flag("daemon") {
         // Check if a daemon is already running
         if let Err(err) = daemon_utils::check_running(DAEMON_PATH) {
             // Don't print error output if -q is passed
-            if !clap.contains_id("quiet") {
+            if !clap.get_flag("quiet") {
                 eprintln!("{}", err);
             }
             exit(1);
         }
         // Block if --no-fork is provided
-        if clap.contains_id("no-fork") {
+        if clap.get_flag("no-fork") {
             daemon::run_daemon(DAEMON_PATH.to_owned()).await;
             return;
         } else
         // Start daemon detached
-        if daemon_utils::start() && !clap.contains_id("quiet") {
+        if daemon_utils::start() && !clap.get_flag("quiet") {
             println!("Daemon started successfully")
         }
         return;
     }
     // Late return to allow a
     // combination of -k and -d
-    if clap.contains_id("kill-daemon") {
+    if clap.get_flag("kill-daemon") {
         return;
     }
 
@@ -75,7 +74,7 @@ async fn main() {
         if !daemon_utils::start() {
             exit(1);
         } else {
-            if !clap.contains_id("quiet") {
+            if !clap.get_flag("quiet") {
                 println!("Daemon started successfully")
             }
             // TODO wait for deamon to be ready

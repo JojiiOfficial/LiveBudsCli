@@ -14,6 +14,7 @@ pub fn start() -> bool {
     let curr_exe = env::current_exe().expect("Couldn't get current executable!");
     let mut cmd = Command::new("nohup");
     let cmd = cmd.arg(curr_exe).arg("-d").arg("--no-fork").arg("-q");
+    println!("Daemon CMD: {cmd:#?}");
     cmd.stdout(Stdio::null());
     cmd.stderr(Stdio::null());
     let status = cmd.spawn();

@@ -30,7 +30,7 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
 
     println!("Info for '{}':", bt_name);
     println!();
-    if app.contains_id("verbose") {
+    if app.get_flag("verbose") {
         println!("Type:\t\t{:?}", res.model);
     }
     println!("Battery:\tL: {}%, R: {}%", res.batt_left, res.batt_right);
@@ -106,7 +106,7 @@ pub fn show(sc: &mut SocketClient, app: &ArgMatches) {
         (res.debug.temperature_right * 100_f32).floor() / 100_f32
     );
 
-    if app.contains_id("verbose") {
+    if app.get_flag("verbose") {
         println!(
             "Current left:\t{:?}mA",
             (res.debug.current_left * 10000_f64).floor()
