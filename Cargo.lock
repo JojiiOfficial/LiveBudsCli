@@ -542,7 +542,7 @@ dependencies = [
 
 [[package]]
 name = "earbuds"
-version = "0.1.9"
+version = "0.2.0"
 dependencies = [
  "async-std",
  "bluetooth-serial-port-async",
@@ -766,8 +766,9 @@ dependencies = [
 
 [[package]]
 name = "galaxy_buds_rs"
-version = "0.2.10"
-source = "git+https://github.com/JojiiOfficial/GalaxyBuds-rs#b208143c53ea7dc36bddd6153cc74989d0d31975"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a4039b4dccfd3fb99a85e1250074f35660f1cd5b1c809ea267de4a196b461ac"
 dependencies = [
  "async-std",
  "bluetooth-serial-port-async",
