@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
+use tokio::sync::Mutex;
+
 use super::Request;
 use super::{request_handler::get_err, Response};
 
 use crate::daemon::{buds_config::Config, buds_info::BudsInfoInner, utils};
-
-use async_std::sync::{Arc, Mutex};
 
 // Set the value of a config option for a device
 pub async fn set_value(payload: &Request, address: String, config: Arc<Mutex<Config>>) -> String {

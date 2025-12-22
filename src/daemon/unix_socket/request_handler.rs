@@ -1,14 +1,15 @@
+use std::sync::Arc;
+
 use super::super::buds_info::BudsInfoInner;
 use super::set_value;
 use super::{super::bluetooth::rfcomm_connector::ConnectionData, config};
 use super::{super::buds_config::Config, bluetooth_commands};
 use super::{Request, Response};
 
-use async_std::{
-    io::{prelude::*, BufReader, BufWriter},
-    os::unix::net::UnixStream,
-    sync::{Arc, Mutex},
-};
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter};
+use tokio::net::unix::OwnedWriteHalf;
+use tokio::net::UnixStream;
+use tokio::sync::Mutex;
 
 /// Handle a unix socket connection
 pub async fn handle_client(
@@ -16,8 +17,9 @@ pub async fn handle_client(
     cd: Arc<Mutex<ConnectionData>>,
     config: Arc<Mutex<Config>>,
 ) {
-    let mut read_stream = BufReader::new(&stream);
-    let mut write_stream = BufWriter::new(&stream);
+    let (read, write) = stream.into_split();
+    let mut read_stream = BufReader::new(read);
+    let mut write_stream = BufWriter::new(write);
 
     // Read the request
     let mut buff = String::new();
@@ -89,13 +91,10 @@ async fn run_payload_cmd(
             let mut device = connection_data.get_device_mut(&device_addr).unwrap();
             set_value::toggle(&payload, &mut device).await
         }
-        "set_config" => config::set_value(&payload, device_addr.clone(), config).await,
+        "set_config" => config::set_value(&payload, device_addr, config).await,
         "disconnect" | "connect" => {
-            bluetooth_commands::change_connection_status(
-                device_addr.clone(),
-                payload.cmd == "connect",
-            )
-            .await
+            bluetooth_commands::change_connection_status(&device_addr, payload.cmd == "connect")
+                .await
         }
 
         _ => return None,
@@ -103,7 +102,7 @@ async fn run_payload_cmd(
 }
 
 // Respond to client. Return true on success
-async fn respond(response: String, write_stream: &mut BufWriter<&UnixStream>) -> bool {
+async fn respond(response: String, write_stream: &mut BufWriter<OwnedWriteHalf>) -> bool {
     // Write response
     if let Err(err) = write_stream.write(response.as_bytes()).await {
         eprintln!("Err: {:?}", err);

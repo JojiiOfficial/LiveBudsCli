@@ -4,13 +4,11 @@ pub mod buds_info;
 pub mod unix_socket;
 pub mod utils;
 
-use async_std::sync::Mutex;
 use bluetooth::rfcomm_connector::ConnectionData;
+use futures::future::join_all;
+use tokio::sync::Mutex;
 
-use std::{
-    sync::{mpsc, Arc},
-    thread,
-};
+use std::sync::{mpsc, Arc};
 
 use self::bluetooth::rfcomm_connector::ConnectionEventData;
 
@@ -30,26 +28,25 @@ pub async fn run_daemon(p: String) {
     ));
 
     // Run Unix socket listener
-    async_std::task::spawn(unix_socket::socket::run(
+    let unix_jh = tokio::task::spawn(unix_socket::socket::run(
         p,
-        Arc::clone(&connection_data),
+        connection_data.clone(),
         Arc::clone(&config),
     ));
 
     // Run connection handler
-    async_std::task::spawn(bluetooth::rfcomm_connector::run(
+    let connhandler_jh = tokio::task::spawn(bluetooth::rfcomm_connector::run(
         conn_rx,
         Arc::clone(&connection_data),
         Arc::clone(&config),
     ));
 
     // Run bluetooth listener
-    thread::Builder::new()
-        .stack_size(1024 * 1024) // 1MB stack
-        .spawn(|| {
-            bluetooth::bt_connection_listener::run(conn_tx);
-        })
-        .expect("can't spawn thread")
-        .join()
-        .expect("Thread spawning failed");
+    let bt_listener_jh = tokio::task::spawn(async {
+        bluetooth::bt_connection_listener::run(conn_tx)
+            .await
+            .unwrap();
+    });
+
+    join_all([unix_jh, connhandler_jh, bt_listener_jh]).await;
 }

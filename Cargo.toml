@@ -12,12 +12,12 @@ readme = "README.md"
 
 [dependencies]
 # galaxy_buds_rs = { git = "https://github.com/JojiiOfficial/GalaxyBuds-rs" }
-galaxy_buds_rs = "0.2.11"
-#galaxy_buds_rs = { path = "../GalaxyBuds-rs" }
+# galaxy_buds_rs = "0.2.11"
+galaxy_buds_rs = { path = "../GalaxyBuds-rs" }
 clap = { version = "4.5", features = ["std", "cargo"] }
 clap_complete = "4.5"
-async-std = { version = "1.13.2", features = ["attributes"] }
 bluetooth-serial-port-async = "0.6.3"
+bluer = { version = "0.17", features = ["rfcomm", "bluetoothd"] }
 blurz = "0.4.0"
 ofiles = "0.2.0"
 serde = { version = "1.0.228", features = ["derive"] }
@@ -31,6 +31,8 @@ rust-pulsectl-fork = { version = "0.2.12", optional = true }
 human-panic = "2.0.4"
 log = "0.4.29"
 pretty_env_logger = "0.5.0"
+tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread","fs","sync"] }
+futures = "0.3.31"
 
 [features]
 default = ["pulse-sink"]

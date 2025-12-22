@@ -16,7 +16,7 @@ use std::process::exit;
 
 const DAEMON_PATH: &str = "/tmp/earbuds.sock";
 
-#[async_std::main]
+#[tokio::main]
 async fn main() {
     setup_panic!();
 

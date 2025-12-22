@@ -1,16 +1,17 @@
 #![allow(unused_variables)]
 
+use std::sync::Arc;
 use std::time::SystemTime;
 
 use super::super::super::unix_socket::bluetooth_commands;
 use super::super::super::{buds_config::Config, buds_info::BudsInfo};
 use super::super::bt_connection_listener::BudsConnection;
 
-use async_std::sync::{Arc, Mutex};
 use galaxy_buds_rs::message::{
     bud_property::{Side, TouchpadOption},
     touchpad_action::TouchAction,
 };
+use tokio::sync::Mutex;
 
 const REQUIRED_TAP_DURATION: u8 = 2;
 
@@ -32,7 +33,7 @@ pub async fn handle(
             // Load the (possibly changed) config values
             cfg.load().await.unwrap();
 
-            let config = cfg.get_device_config(&connection.addr);
+            let config = cfg.get_device_config(&connection.addr.to_string());
             if config.is_none() {
                 true
             } else {
@@ -59,7 +60,7 @@ pub async fn handle(
     // We don't need that hold count crap if the tap-action is set to 'Disconnect' and touchpads
     // are enabled
     if !info.inner.touchpads_blocked {
-        bluetooth_commands::change_connection_status(&connection.addr, false).await;
+        bluetooth_commands::change_connection_status(&connection.addr.to_string(), false).await;
         info.reset_last_tp_update();
         return true;
     }
@@ -89,7 +90,7 @@ pub async fn handle(
         && info.right_tp_hold_count >= REQUIRED_TAP_DURATION
     {
         // Disconnect
-        bluetooth_commands::change_connection_status(&connection.addr, false).await;
+        bluetooth_commands::change_connection_status(&connection.addr.to_string(), false).await;
         info.reset_last_tp_update();
         return true;
     }

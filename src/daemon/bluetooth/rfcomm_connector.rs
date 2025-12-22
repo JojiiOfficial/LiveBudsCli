@@ -1,22 +1,23 @@
+use crate::daemon::bluetooth::bt_connection_listener::SharedStream;
+
 use super::super::buds_config::{BudsConfig, Config};
 use super::super::buds_info::BudsInfo;
 use super::bean_connection;
 use super::bt_connection_listener::BudsConnection;
 
-use async_std::sync::Arc;
-use async_std::sync::Mutex;
-use bluetooth_serial_port_async::{BtAddr, BtProtocol, BtSocket};
+use bluer::Address;
 use galaxy_buds_rs::model::Model;
 use log::info;
+use tokio::sync::Mutex;
 
 use std::collections::HashMap;
-use std::str::FromStr;
 use std::sync::mpsc::Receiver;
+use std::sync::Arc;
 
 /// The connection handler keeps track of
 /// all connected devices and its status
 pub struct ConnHandler {
-    connected_devices: Vec<String>,
+    connected_devices: Vec<Address>,
     pub connection_data: Arc<Mutex<ConnectionData>>,
 }
 
@@ -30,17 +31,17 @@ impl ConnHandler {
     }
 
     /// Check whether a given device is connected or not
-    pub fn has_device(&self, dev: &str) -> bool {
-        self.connected_devices.iter().any(|i| **i == *dev)
+    pub fn has_device(&self, dev: &Address) -> bool {
+        self.connected_devices.contains(dev)
     }
 
     /// Add a device to the ConnHandler
-    pub fn add_device(&mut self, dev: String) {
+    pub fn add_device(&mut self, dev: Address) {
         self.connected_devices.push(dev);
     }
 
     /// Remove a device from the ConnHandler
-    pub async fn remove_device(&mut self, dev: &str) {
+    pub async fn remove_device(&mut self, dev: &Address) {
         self.connection_data.lock().await.data.remove(dev);
 
         let pos = self.get_item_pos(dev);
@@ -52,7 +53,7 @@ impl ConnHandler {
     }
 
     /// Get the position of a device in the ConnHandler device vector
-    pub fn get_item_pos(&self, dev: &str) -> Option<usize> {
+    pub fn get_item_pos(&self, dev: &Address) -> Option<usize> {
         for (i, v) in self.connected_devices.iter().enumerate() {
             if *v == *dev {
                 return Some(i);
@@ -64,7 +65,7 @@ impl ConnHandler {
 
 /// Shared data for informations about connected buds
 pub struct ConnectionData {
-    pub data: HashMap<String, BudsInfo>,
+    pub data: HashMap<Address, BudsInfo>,
 }
 
 impl ConnectionData {
@@ -150,65 +151,49 @@ pub async fn run(
     let arc_ch = Arc::new(Mutex::new(connection_handler));
 
     for i in rec {
-        let connection = {
-            let mut connection_handler = arc_ch.lock().await;
+        let mut connection_handler = arc_ch.lock().await;
 
-            // Ignore already connected devices
-            if connection_handler.has_device(i.address.as_str()) {
-                continue;
-            }
+        // Ignore already connected devices
+        if connection_handler.has_device(&i.address) {
+            continue;
+        }
 
-            // Connect to the RFCOMM interface of the buds
-            let connection = connect_rfcomm(i.address.clone());
-            if let Err(err) = connection {
-                eprintln!("Error connecting to rfcomm: {:?}", err);
-                continue;
-            }
+        // Add device to the connection handler
+        connection_handler.add_device(i.address.clone());
 
-            // Add device to the connection handler
-            connection_handler.add_device(i.address.to_owned());
-
-            info!("Connected successfully to {}", i.model);
-
-            connection
-        };
+        info!("Connected successfully to {}", i.model);
 
         // Set default config for (apparently) new device
         {
             let mut cfg = config.lock().await;
-            if !cfg.has_device_config(&i.address) {
-                cfg.set_device_config(BudsConfig::new(i.address.clone()))
+            let address_str = i.address.to_string();
+            if !cfg.has_device_config(&address_str) {
+                cfg.set_device_config(BudsConfig::new(address_str))
                     .await
                     .unwrap();
             }
         }
 
+        let connection = BudsConnection {
+            addr: i.address,
+            stream: i.stream,
+        };
+
         // Create a new buds connection task
-        async_std::task::spawn(bean_connection::listener::start_listen(
-            connection.unwrap(),
-            Arc::clone(&config),
-            Arc::clone(&arc_ch),
+        tokio::task::spawn(bean_connection::listener::start_listen(
+            connection,
+            config.clone(),
+            arc_ch.clone(),
             i.model,
-        ));
+        ))
+        .await
+        .unwrap();
     }
 }
 
-/// Connect to buds live via rfcomm proto
-pub fn connect_rfcomm<S: AsRef<str>>(addr: S) -> Result<BudsConnection, String> {
-    let mut socket = BtSocket::new(BtProtocol::RFCOMM).map_err(|e| e.to_string())?;
-    let address = BtAddr::from_str(addr.as_ref()).unwrap();
-    socket.connect(address).map_err(|e| e.to_string())?;
-    // let fd = socket.get_fd();
-
-    Ok(BudsConnection {
-        addr: addr.as_ref().to_owned(),
-        socket,
-        // fd,
-    })
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ConnectionEventData {
-    pub address: String,
+    pub address: Address,
+    pub stream: SharedStream,
     pub model: Model,
 }

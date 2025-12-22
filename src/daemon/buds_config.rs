@@ -1,9 +1,11 @@
 #![allow(dead_code)]
-use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
-use async_std::fs::{self, File};
-use async_std::io::prelude::*;
-use async_std::path::PathBuf;
+use serde::{Deserialize, Serialize};
+use tokio::{
+    fs::{self, File},
+    io::AsyncWriteExt,
+};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Config {
@@ -29,7 +31,7 @@ impl Config {
 
         let config;
 
-        if !config_file.exists().await
+        if !config_file.exists()
             // Check if file is empty
             || fs::metadata(&config_file)
                 .await
@@ -169,7 +171,7 @@ impl Config {
             .expect("Can't determine home directory!");
         let conf_dir = conf_home.join("livebuds");
 
-        if !conf_dir.exists().await {
+        if !conf_dir.exists() {
             fs::create_dir_all(&conf_dir)
                 .await
                 .map_err(|e| e.to_string())?;
@@ -187,9 +189,9 @@ pub fn get_home_dir() -> Option<PathBuf> {
     try_env_var("HOME")
 }
 
-fn try_env_var(name: &str) -> Option<PathBuf>{
+fn try_env_var(name: &str) -> Option<PathBuf> {
     let xdg = std::env::var_os(name)?;
-    if xdg.is_empty(){
+    if xdg.is_empty() {
         return None;
     }
     Some(PathBuf::from(xdg))

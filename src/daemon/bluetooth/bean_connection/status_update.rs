@@ -1,4 +1,5 @@
 use std::process::exit;
+use std::sync::Arc;
 
 use super::super::super::buds_config::{BudsConfig, Config};
 use super::super::super::buds_info::BudsInfo;
@@ -6,11 +7,11 @@ use super::super::bt_connection_listener::BudsConnection;
 use super::sink;
 use super::utils;
 
-use async_std::sync::{Arc, Mutex};
 use galaxy_buds_rs::message::status_updated::StatusUpdate;
 
 #[cfg(feature = "pulse-sink")]
 use pulsectl::controllers::SinkController;
+use tokio::sync::Mutex;
 
 // Update a BudsInfo to the values of an extended_status_update
 fn update_status(update: &StatusUpdate, info: &mut BudsInfo) {
@@ -38,7 +39,7 @@ pub async fn handle(
     }
 
     // Check if current device has a config entry
-    if let Some(config) = cfg.get_device_config(&connection.addr) {
+    if let Some(config) = cfg.get_device_config(&connection.addr.to_string()) {
         // Play/Pause audio
         if config.auto_play() || config.auto_pause() || config.smart_sink() {
             handle_auto_music(&update, info, &config);

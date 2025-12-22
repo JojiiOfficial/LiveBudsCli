@@ -2,6 +2,7 @@ use super::super::super::buds_info::BudsInfo;
 use galaxy_buds_rs::{message::extended_status_updated::ExtendedStatusUpdate, model::Model};
 
 pub fn handle(update: ExtendedStatusUpdate, info: &mut BudsInfo) {
+    println!("{update:#?}");
     // Update values from extended update
     update_extended_status(update, info);
 

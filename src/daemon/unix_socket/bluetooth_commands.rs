@@ -1,7 +1,7 @@
-use blurz::{BluetoothAdapter, BluetoothDevice, BluetoothSession};
-
 // Connect or disconnect to the buds
-pub async fn change_connection_status<S: AsRef<str>>(device_addr: S, connect: bool) -> String {
+pub async fn change_connection_status(_device_addr: &str, _connect: bool) -> String {
+    todo!()
+    /*
     // Init bluetooth session and adapter
     let session = BluetoothSession::create_session(None);
     if session.is_err() {
@@ -48,4 +48,5 @@ pub async fn change_connection_status<S: AsRef<str>>(device_addr: S, connect: bo
     }
 
     "success".to_string()
+    */
 }

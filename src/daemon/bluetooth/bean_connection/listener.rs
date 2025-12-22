@@ -1,16 +1,23 @@
+use crate::daemon::buds_info::BudsInfo;
+
 use super::{
     super::{
-        super::{buds_config::Config, buds_info::BudsInfo},
-        bt_connection_listener::BudsConnection,
+        super::buds_config::Config, bt_connection_listener::BudsConnection,
         rfcomm_connector::ConnHandler,
     },
     ambient_mode, anc, extended_status_update, get_all_data, status_update, touchpad,
 };
 
-use async_std::{io::prelude::*, sync::Mutex};
 use galaxy_buds_rs::{
-    message::{self, debug::GetAllData, ids, usage_report::UsageReport, Message, Payload},
+    message::{
+        self, debug::GetAllData, extended_status_updated::ExtendedStatusUpdate, ids,
+        usage_report::UsageReport, Message, Payload,
+    },
     model::Model,
+};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    sync::Mutex,
 };
 
 use std::{process::exit, sync::Arc};
@@ -24,7 +31,7 @@ pub async fn start_listen(
     ch: Arc<Mutex<ConnHandler>>,
     model: Model,
 ) {
-    let mut stream = connection.socket.get_stream();
+    let stream = connection.stream.clone();
     let mut buffer: Vec<u8> = vec![0u8; BUFF_SIZE];
 
     // Check config errors
@@ -40,14 +47,19 @@ pub async fn start_listen(
     let mut first_msg = true;
 
     loop {
-        let bytes_read = match stream.read(&mut buffer).await {
+        let mut bytes_read = match stream.lock_stream().await.read(&mut buffer).await {
             Ok(v) => v,
             Err(_) => {
                 let mut c = ch.lock().await;
-                c.remove_device(connection.addr.as_str()).await;
+                c.remove_device(&connection.addr).await;
                 return;
             }
         };
+
+        if first_msg {
+            buffer.insert(0, 253);
+            bytes_read += 1;
+        }
 
         // The received message from the buds
         let message = Message::new(&buffer[0..bytes_read], model);
@@ -74,13 +86,14 @@ pub async fn start_listen(
         let mut disconnect_afterwards = false;
 
         {
+            println!("{:#?}", ExtendedStatusUpdate::from(message.clone()));
+
             let connection_handler = ch.lock().await;
             let mut lock = connection_handler.connection_data.lock().await;
 
-            let info = lock
-                .data
-                .entry(connection.addr.clone())
-                .or_insert_with(|| BudsInfo::new(stream.clone(), &connection.addr, model));
+            let info = lock.data.entry(connection.addr.clone()).or_insert_with(|| {
+                BudsInfo::new(stream.clone(), &connection.addr.to_string(), model)
+            });
 
             match message.get_id() {
                 ids::TOUCHPAD_ACTION => {
@@ -98,6 +111,8 @@ pub async fn start_listen(
 
                     // Respond with set manager
                     stream
+                        .lock_stream()
+                        .await
                         .write(&message::manager::new(true, 24).get_data())
                         .await
                         .unwrap();

@@ -1,7 +1,5 @@
 use std::time::SystemTime;
 
-use async_std::io::prelude::*;
-use async_std::os::unix::net::UnixStream;
 use galaxy_buds_rs::{
     message::{self, debug},
     model::Feature,
@@ -14,11 +12,14 @@ use galaxy_buds_rs::{
     model::Model,
 };
 use serde::{Deserialize, Serialize};
+use tokio::io::AsyncWriteExt;
+
+use crate::daemon::bluetooth::bt_connection_listener::SharedStream;
 
 /// Informations about a connected pair
 /// of Galaxy Buds live
 pub struct BudsInfo {
-    pub stream: UnixStream,
+    pub stream: SharedStream,
     pub inner: BudsInfoInner,
     pub last_debug: SystemTime,
     pub left_tp_hold_count: u8,
@@ -67,7 +68,7 @@ pub struct BudsInfoInner {
 }
 
 impl BudsInfo {
-    pub fn new<S: AsRef<str>>(stream: UnixStream, address: S, model: Model) -> Self {
+    pub fn new<S: AsRef<str>>(stream: SharedStream, address: S, model: Model) -> Self {
         Self {
             stream,
             inner: BudsInfoInner {
@@ -148,12 +149,17 @@ impl BudsInfo {
     }
 
     // Send a message to the earbuds
-    pub async fn send<T>(&self, msg: T) -> Result<(), String>
+    pub async fn send<T>(&mut self, msg: T) -> Result<(), String>
     where
         T: message::Payload,
     {
-        let mut stream = &self.stream;
-        if let Err(err) = stream.write(&msg.to_byte_array()).await {
+        if let Err(err) = self
+            .stream
+            .lock_stream()
+            .await
+            .write(&msg.to_byte_array())
+            .await
+        {
             return Err(err.to_string());
         }
 
