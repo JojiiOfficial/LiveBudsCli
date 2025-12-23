@@ -153,13 +153,9 @@ impl BudsInfo {
     where
         T: message::Payload,
     {
-        if let Err(err) = self
-            .stream
-            .lock_stream()
-            .await
-            .write(&msg.to_byte_array())
-            .await
-        {
+        let mut locked = self.stream.lock_write().await;
+
+        if let Err(err) = locked.write(&msg.to_byte_array()).await {
             return Err(err.to_string());
         }
 

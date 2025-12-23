@@ -9,12 +9,10 @@ use super::{
 };
 
 use galaxy_buds_rs::{
-    message::{
-        self, debug::GetAllData, extended_status_updated::ExtendedStatusUpdate, ids,
-        usage_report::UsageReport, Message, Payload,
-    },
+    message::{self, debug::GetAllData, ids, usage_report::UsageReport, Message, Payload},
     model::Model,
 };
+use log::debug;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     sync::Mutex,
@@ -28,13 +26,12 @@ const BUFF_SIZE: usize = 2048;
 pub async fn start_listen(
     connection: BudsConnection,
     config: Arc<Mutex<Config>>,
-    ch: Arc<Mutex<ConnHandler>>,
+    conn_handler: Arc<Mutex<ConnHandler>>,
     model: Model,
 ) {
-    let stream = connection.stream.clone();
     let mut buffer: Vec<u8> = vec![0u8; BUFF_SIZE];
 
-    // Check config errors
+    // Check for config errors
     {
         let mut cfg = config.lock().await;
         if let Err(err) = cfg.load().await {
@@ -45,20 +42,30 @@ pub async fn start_listen(
 
     let mut requested_debug = false;
     let mut first_msg = true;
+    let mut msg_after_connect = true;
 
     loop {
-        let mut bytes_read = match stream.lock_stream().await.read(&mut buffer).await {
+        let bytes_read = connection.stream.lock_read().await.read(&mut buffer).await;
+
+        let mut bytes_read = match bytes_read {
             Ok(v) => v,
-            Err(_) => {
-                let mut c = ch.lock().await;
+            Err(err) => {
+                debug!("Read err: {:?}", err);
+                let mut c = conn_handler.lock().await;
                 c.remove_device(&connection.addr).await;
                 return;
             }
         };
 
-        if first_msg {
+        if bytes_read == 0 {
+            continue;
+        }
+
+        // Insert the previously read first character when trying to connect.
+        if msg_after_connect {
             buffer.insert(0, 253);
             bytes_read += 1;
+            msg_after_connect = false;
         }
 
         // The received message from the buds
@@ -86,13 +93,15 @@ pub async fn start_listen(
         let mut disconnect_afterwards = false;
 
         {
-            println!("{:#?}", ExtendedStatusUpdate::from(message.clone()));
-
-            let connection_handler = ch.lock().await;
+            let connection_handler = conn_handler.lock().await;
             let mut lock = connection_handler.connection_data.lock().await;
 
             let info = lock.data.entry(connection.addr.clone()).or_insert_with(|| {
-                BudsInfo::new(stream.clone(), &connection.addr.to_string(), model)
+                BudsInfo::new(
+                    connection.stream.clone(),
+                    &connection.addr.to_string(),
+                    model,
+                )
             });
 
             match message.get_id() {
@@ -110,8 +119,9 @@ pub async fn start_listen(
                     extended_status_update::handle(message.into(), info);
 
                     // Respond with set manager
-                    stream
-                        .lock_stream()
+                    connection
+                        .stream
+                        .lock_write()
                         .await
                         .write(&message::manager::new(true, 24).get_data())
                         .await
@@ -159,8 +169,11 @@ pub async fn start_listen(
 
         // Disconnect from device
         if disconnect_afterwards {
-            println!("Disconnecting from device {}", connection.addr);
-            ch.lock().await.remove_device(&connection.addr).await;
+            conn_handler
+                .lock()
+                .await
+                .remove_device(&connection.addr)
+                .await;
             return;
         }
     }

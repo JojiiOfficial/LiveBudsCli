@@ -147,26 +147,28 @@ pub async fn run(
     cd: Arc<Mutex<ConnectionData>>,
     config: Arc<Mutex<Config>>,
 ) {
-    let connection_handler = ConnHandler::new(cd);
-    let arc_ch = Arc::new(Mutex::new(connection_handler));
+    let conn_handler = Arc::new(Mutex::new(ConnHandler::new(cd)));
 
-    for i in rec {
-        let mut connection_handler = arc_ch.lock().await;
+    for connection_event in rec {
+        // We must drop the connection handler guard to prevent locking the receiver of connected devices.
+        {
+            let mut connection_handler = conn_handler.lock().await;
 
-        // Ignore already connected devices
-        if connection_handler.has_device(&i.address) {
-            continue;
+            // Ignore already connected devices
+            if connection_handler.has_device(&connection_event.address) {
+                continue;
+            }
+
+            // Add device to the connection handler
+            connection_handler.add_device(connection_event.address.clone());
         }
 
-        // Add device to the connection handler
-        connection_handler.add_device(i.address.clone());
-
-        info!("Connected successfully to {}", i.model);
+        info!("Connected successfully to {}", connection_event.model);
 
         // Set default config for (apparently) new device
         {
             let mut cfg = config.lock().await;
-            let address_str = i.address.to_string();
+            let address_str = connection_event.address.to_string();
             if !cfg.has_device_config(&address_str) {
                 cfg.set_device_config(BudsConfig::new(address_str))
                     .await
@@ -175,16 +177,16 @@ pub async fn run(
         }
 
         let connection = BudsConnection {
-            addr: i.address,
-            stream: i.stream,
+            addr: connection_event.address,
+            stream: connection_event.stream,
         };
 
         // Create a new buds connection task
         tokio::task::spawn(bean_connection::listener::start_listen(
             connection,
             config.clone(),
-            arc_ch.clone(),
-            i.model,
+            conn_handler.clone(),
+            connection_event.model,
         ))
         .await
         .unwrap();

@@ -14,7 +14,7 @@ pub async fn run<P: AsRef<Path>>(p: P, cd: Arc<Mutex<ConnectionData>>, config: A
         while let Ok((stream, _)) = listener.accept().await {
             tokio::task::spawn(request_handler::handle_client(
                 stream,
-                Arc::clone(&cd),
+                cd.clone(),
                 Arc::clone(&config),
             ));
         }

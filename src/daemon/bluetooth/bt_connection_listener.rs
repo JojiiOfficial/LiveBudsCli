@@ -4,7 +4,10 @@
  */
 
 use bluer::{
-    rfcomm::{SocketAddr, Stream},
+    rfcomm::{
+        stream::{OwnedReadHalf, OwnedWriteHalf},
+        SocketAddr, Stream,
+    },
     AdapterEvent, Address, Device, Uuid,
 };
 
@@ -23,18 +26,25 @@ use super::rfcomm_connector::ConnectionEventData;
 
 #[derive(Debug, Clone)]
 pub struct SharedStream {
-    stream: Arc<Mutex<Stream>>,
+    read: Arc<Mutex<OwnedReadHalf>>,
+    write: Arc<Mutex<OwnedWriteHalf>>,
 }
 
 impl SharedStream {
     pub fn new(stream: Stream) -> Self {
+        let split = stream.into_split();
         Self {
-            stream: Arc::new(Mutex::new(stream)),
+            read: Arc::new(Mutex::new(split.0)),
+            write: Arc::new(Mutex::new(split.1)),
         }
     }
 
-    pub async fn lock_stream(&self) -> MutexGuard<'_, Stream> {
-        self.stream.lock().await
+    pub async fn lock_read(&self) -> MutexGuard<'_, OwnedReadHalf> {
+        self.read.lock().await
+    }
+
+    pub async fn lock_write(&self) -> MutexGuard<'_, OwnedWriteHalf> {
+        self.write.lock().await
     }
 }
 
