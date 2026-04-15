@@ -31,7 +31,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
     );
 
     // Set opt param if present
-    if app.contains_id("opt") {
+    if app.try_contains_id("opt").unwrap_or(false) {
         request.opt_param3 = app.get_one::<String>("opt").cloned();
     }
 
