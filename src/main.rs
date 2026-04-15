@@ -125,7 +125,7 @@ fn run_subcommands(clap: ArgMatches) {
             &mut socket_client,
             subcommand,
             true,
-            subcommand.get_one::<String>("value").expect("required"),
+            "", // not used if toggle=true
         );
     }
 
