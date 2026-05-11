@@ -57,7 +57,7 @@ pub fn set(sc: &mut SocketClient, app: &ArgMatches, toggle: bool, value: &str) {
     } else if let Some(err_msg) = res.status_message {
         println!("Error: {}", err_msg);
     } else {
-        println!("Error!")
+        println!("Error: Operation failed");
     }
 }
 
